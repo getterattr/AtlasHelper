@@ -1,3 +1,4 @@
+using AtlasHelper.GameState;
 using ImGuiNET;
 using System.Numerics;
 
@@ -11,7 +12,7 @@ internal static class HudOverlay
     private const ImGuiWindowFlags WindowFlags =
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
 
-    public static void Draw(AtlasHelperSettings settings)
+    public static void Draw(AtlasHelperSettings settings, AtlasSnapshot state)
     {
         var hud = settings.Hud;
 
@@ -29,26 +30,24 @@ internal static class HudOverlay
         }
 
         ImGui.SetWindowFontScale(hud.TextScale.Value);
-        DrawBody(settings);
+        DrawBody(settings, state);
         ImGui.SetWindowFontScale(1f);
         ImGui.End();
 
         PopStyles();
     }
 
-    private static void DrawBody(AtlasHelperSettings settings)
+    private static void DrawBody(AtlasHelperSettings settings, AtlasSnapshot state)
     {
         ImGui.Text($"Phase:       {settings.Progression.PhaseOverride.Value}");
         ImGui.Text($"Strategy:    {settings.Progression.Strategy.Value}");
         ImGui.Separator();
 
-        ImGui.Text("Voidstones:  0 / 4");
-        ImGui.Text("Completion:  0 / 117");
-        ImGui.Text("Maven:       0 / 10");
-        ImGui.Separator();
-
-        ImGui.Text("Exarch chain:  pending");
-        ImGui.Text("Eater chain:   pending");
+        ImGui.Text($"Voidstones:  {state.Voidstones.SocketedCount} / 4");
+        ImGui.Text($"Normal maps: {state.Completion.NormalBonusCount} / {AtlasCompletion.NormalBonusTarget}");
+        ImGui.Text($"Unique maps: {state.Completion.UniqueBonusCount} / {AtlasCompletion.UniqueBonusTarget}");
+        ImGui.Text($"Maven:       {state.Maven.WitnessCount} / {MavenState.InvitationTarget}");
+        ImGui.Text($"Passives:    {state.Passives.Count} allocated");
     }
 
     private static void PopStyles()

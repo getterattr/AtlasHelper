@@ -37,7 +37,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         if (!Settings.Hud.Show.Value)
             return;
 
-        HudOverlay.Draw(Settings);
+        HudOverlay.Draw(Settings, _state.Current);
     }
 
     public override void EntityAdded(Entity entity)
