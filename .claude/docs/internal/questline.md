@@ -31,16 +31,34 @@ Sources:
 
 ## Eldritch - Searing Exarch and Eater of Worlds
 
-Both pinnacles must be defeated for the Eldritch Voidstone.
+Both pinnacles must be defeated for the Eldritch Voidstone. Each has an independent quest chain; the voidstone drops once both chains are complete.
 
-- Run maps in the Searing Exarch or Eater of Worlds influenced region. Eldritch altars appear on monster corpses in influenced maps; each altar offers a paired upside/downside choice.
-- **Incandescent Invitation** (Exarch) drops from the boss on the **28th T14+ Exarch-influenced map**. Repeats every subsequent 28 maps.
-- **Screaming Invitation** (Eater) drops from the boss on the **28th T14+ Eater-influenced map**. Repeats every subsequent 28 maps.
-- Defeat both pinnacles. Voidstone drops.
+Both chains begin the same way: encounter **The Envoy** in a yellow map (T6+), who introduces the pinnacle and hands over its unlock item.
+
+### Searing Exarch chain
+
+1. Envoy hands over the **Luminous Astrolabe**. Interacting with the Map Device consumes it and adds a Searing Exarch influence toggle.
+2. Add Searing Exarch influence to a **T11+ map** and kill the boss. The boss drops the **Polaric Invitation**.
+3. Use the Polaric Invitation in the Map Device to fight **The Black Star**.
+4. After The Black Star is defeated, run Exarch-influenced maps at progressively higher tiers (T12, T13, T14, T15, T16), toggling influence via the Map Device each time.
+5. The T16 Exarch-influenced boss drops the **Incandescent Invitation**.
+6. Use the Incandescent Invitation to fight **The Searing Exarch**.
+
+### Eater of Worlds chain
+
+1. Envoy hands over the **Flesh Compass**. Interacting with the Map Device consumes it and adds an Eater of Worlds influence toggle.
+2. Ramp Eater influence through T9+, T10+, T12+, and up to T16+ maps, running the required count at each stage.
+3. The T16 Eater-influenced boss drops the **Screaming Invitation**.
+4. Use the Screaming Invitation to fight **The Eater of Worlds**.
+
+Eldritch altars spawn on monster corpses in influenced maps throughout both chains; each altar offers a paired upside/downside modifier choice. They are optional to the questline but affect map difficulty and rewards.
+
+Once both chains are complete, the Eldritch Voidstone is granted.
 
 Sources:
-- [The Searing Exarch | PoE Wiki](https://www.poewiki.net/wiki/The_Searing_Exarch)
-- [The Eater of Worlds | PoE Wiki](https://www.poewiki.net/wiki/The_Eater_of_Worlds)
+- [The Searing Exarch (quest) | PoE Wiki](https://www.poewiki.net/wiki/The_Searing_Exarch_(quest))
+- [The Eater of Worlds (quest) | PoE Wiki](https://www.poewiki.net/wiki/The_Eater_of_Worlds_(quest))
+- [Flesh Compass | PoE Wiki](https://www.poewiki.net/wiki/Flesh_Compass)
 - [Eldritch altar | PoE Wiki](https://www.poewiki.net/wiki/Eldritch_altar)
 
 ## Decayed - The Shaper and The Elder
