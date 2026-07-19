@@ -215,4 +215,74 @@ public static class Pathfinding
             if (node.GrantsBonus && !node.BonusCompleted) count++;
         return count;
     }
+
+    // Multi-source BFS: start from every node matching `isSource` in
+    // parallel, return the shortest hop chain to the first node matching
+    // `isDestination`. Path is [source, ..., destination] in walk order.
+    //
+    // Fits the "shortest unlock chain to an objective" question - pass
+    // `n => n.Completed || n.BaseTier == 1` for the source predicate and
+    // an objective id for the destination. Any already-completed node
+    // becomes a valid jumping-off point, so the algorithm exploits high-
+    // tier progress rather than always walking back to T1.
+    //
+    // Returns AtlasPath.Empty if no source exists in the tree or if no
+    // source can reach the destination.
+    public static AtlasPath FindPathFromSources(
+        AtlasTree tree,
+        Func<AtlasMapNode, bool> isSource,
+        Func<AtlasMapNode, bool> isDestination)
+    {
+        var byId = new Dictionary<string, AtlasMapNode>(tree.Nodes.Count);
+        foreach (var node in tree.Nodes)
+            byId[node.AreaId] = node;
+
+        var queue = new Queue<AtlasMapNode>();
+        var visited = new HashSet<string>();
+        var previous = new Dictionary<string, AtlasMapNode>();
+
+        foreach (var node in tree.Nodes)
+        {
+            if (!isSource(node)) continue;
+            if (!visited.Add(node.AreaId)) continue;
+            queue.Enqueue(node);
+        }
+
+        if (queue.Count == 0) return AtlasPath.Empty;
+
+        AtlasMapNode? destination = null;
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+
+            if (isDestination(current))
+            {
+                destination = current;
+                break;
+            }
+
+            foreach (var neighborId in current.ConnectedAreaIds)
+            {
+                if (!byId.TryGetValue(neighborId, out var neighbor)) continue;
+                if (!visited.Add(neighborId)) continue;
+
+                previous[neighborId] = current;
+                queue.Enqueue(neighbor);
+            }
+        }
+
+        if (destination == null)
+            return AtlasPath.Empty;
+
+        var path = new List<AtlasMapNode>();
+        var cursor = destination;
+        while (cursor != null)
+        {
+            path.Add(cursor);
+            if (!previous.TryGetValue(cursor.AreaId, out var prev)) break;
+            cursor = prev;
+        }
+        path.Reverse();
+        return new AtlasPath(path);
+    }
 }

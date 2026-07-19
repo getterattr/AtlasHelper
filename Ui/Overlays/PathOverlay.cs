@@ -10,17 +10,14 @@ using Graphics = ExileCore.Graphics;
 
 namespace AtlasHelper.Ui.Overlays;
 
-// Phase-1 and Phase-2 render surface. Draws the shortest unlock path
-// from the current phase's voidstone corner outward to the completed
-// frontier (or nearest T1 if nothing is completed yet), routing through
-// strategy-required waypoints (both boss-arena entry icons for
-// Eldritch). Rings on path nodes plus lines between consecutive nodes,
-// plus a small name+tier label per node.
-//
-// Direction: corner is the start, frontier is the destination. Player
-// plays the path in reverse (from their completed frontier walking out
-// toward the corner where the voidstone gets socketed). See
-// strategy.md#route-planning.
+// Phase-1 and Phase-2 render surface. For every objective the phase
+// requires (Eldritch: corner + Black Star + Infinite Hunger; Originator:
+// corner alone) the plugin independently BFS-searches from every already-
+// completed node in parallel to the shortest chain of incomplete maps
+// that reaches that objective. The union of those chains is what gets
+// rendered - a Steiner-tree-shaped highlight that lets already-run high-
+// tier maps act as jumping-off points instead of forcing a walk back to
+// T1. See strategy.md#route-planning.
 //
 // Phase 3 is handled by AtlasOverlay (uncompleted bonus rings). Phase
 // 4 has no path overlay: by Phase 3's end the atlas is fully unlocked,
@@ -63,13 +60,13 @@ internal static class PathOverlay
 
         var byId = BuildLookup(snapshot.Tree);
 
-        var path = phase == PhaseId.One
-            ? ComputeEldritchPath(snapshot.Tree, byId, objectives)
-            : ComputeOriginatorPath(snapshot.Tree, byId, objectives);
+        var paths = phase == PhaseId.One
+            ? ComputeEldritchPaths(snapshot.Tree, byId, objectives)
+            : ComputeOriginatorPaths(snapshot.Tree, byId, objectives);
 
-        if (path.Length == 0) return;
+        if (paths.Count == 0) return;
 
-        RenderPath(graphics, atlas, path, snapshot);
+        RenderPaths(graphics, atlas, paths, snapshot);
     }
 
     private static PhaseId ResolvePhase(AtlasHelperSettings settings, AtlasSnapshot snapshot)
@@ -92,107 +89,120 @@ internal static class PathOverlay
         return d;
     }
 
-    private static AtlasPath ComputeEldritchPath(
+    private static List<AtlasPath> ComputeEldritchPaths(
         AtlasTree tree,
         Dictionary<string, AtlasMapNode> byId,
         AtlasObjectives objectives)
     {
-        var cornerId = objectives.EldritchCornerId;
-        var waypointA = objectives.EldritchWaypointA;
-        var waypointB = objectives.EldritchWaypointB;
-        if (string.IsNullOrEmpty(cornerId)) return AtlasPath.Empty;
-        if (string.IsNullOrEmpty(waypointA)) return AtlasPath.Empty;
-        if (string.IsNullOrEmpty(waypointB)) return AtlasPath.Empty;
-        if (!byId.ContainsKey(cornerId)) return AtlasPath.Empty;
-        if (!byId.ContainsKey(waypointA)) return AtlasPath.Empty;
-        if (!byId.ContainsKey(waypointB)) return AtlasPath.Empty;
-
-        var routeThroughWaypoints = Pathfinding.FindMultiTargetPath(
-            tree, cornerId, new[] { waypointA, waypointB });
-        if (routeThroughWaypoints.Length == 0) return AtlasPath.Empty;
-
-        var tailStart = routeThroughWaypoints.Destination!.AreaId;
-        var tail = Pathfinding.FindPath(tree, tailStart, n => n.Completed || n.BaseTier == 1);
-
-        return Concatenate(routeThroughWaypoints, tail);
+        var targets = new List<string?>
+        {
+            objectives.EldritchCornerId,
+            objectives.EldritchWaypointA,
+            objectives.EldritchWaypointB,
+        };
+        return PathsToTargets(tree, byId, targets);
     }
 
-    private static AtlasPath ComputeOriginatorPath(
+    private static List<AtlasPath> ComputeOriginatorPaths(
         AtlasTree tree,
         Dictionary<string, AtlasMapNode> byId,
         AtlasObjectives objectives)
     {
-        var cornerId = objectives.OriginatorCornerId;
-        if (string.IsNullOrEmpty(cornerId)) return AtlasPath.Empty;
-        if (!byId.ContainsKey(cornerId)) return AtlasPath.Empty;
-
-        return Pathfinding.FindPath(tree, cornerId, n => n.Completed || n.BaseTier == 1);
+        return PathsToTargets(tree, byId, new List<string?> { objectives.OriginatorCornerId });
     }
 
-    private static AtlasPath Concatenate(AtlasPath head, AtlasPath tail)
+    // For each objective id, BFS from every already-completed node (plus
+    // T1s as a fresh-atlas fallback) to that objective, returning the
+    // shortest chain of incomplete maps to reach it. Empty results are
+    // dropped. Each returned path is [nearest_source, ..., objective] -
+    // the source is either a completed node or an initial T1, either
+    // way it renders as a de-emphasised jumping-off point after the
+    // completed-node filter runs.
+    private static List<AtlasPath> PathsToTargets(
+        AtlasTree tree,
+        Dictionary<string, AtlasMapNode> byId,
+        IReadOnlyList<string?> targetIds)
     {
-        if (tail.Length == 0) return head;
-        if (head.Length == 0) return tail;
+        var result = new List<AtlasPath>(targetIds.Count);
+        foreach (var raw in targetIds)
+        {
+            if (string.IsNullOrEmpty(raw)) continue;
+            if (!byId.ContainsKey(raw)) continue;
 
-        var combined = new List<AtlasMapNode>(head.Nodes.Count + tail.Nodes.Count - 1);
-        combined.AddRange(head.Nodes);
-        for (var i = 1; i < tail.Nodes.Count; i++)
-            combined.Add(tail.Nodes[i]);
-        return new AtlasPath(combined);
+            var target = raw;
+            var path = Pathfinding.FindPathFromSources(
+                tree,
+                isSource: n => n.Completed || n.BaseTier == 1,
+                isDestination: n => n.AreaId == target);
+
+            if (path.Length > 0) result.Add(path);
+        }
+        return result;
     }
 
-    private static void RenderPath(Graphics graphics, AtlasPanel atlas, AtlasPath path, AtlasSnapshot snapshot)
+    private static void RenderPaths(
+        Graphics graphics,
+        AtlasPanel atlas,
+        List<AtlasPath> paths,
+        AtlasSnapshot snapshot)
     {
-        // First pass: project every INCOMPLETE node on the path.
-        // Completed nodes are the frontier (or already-cleared stops
-        // en route) - the player has run them, so highlighting is
-        // misleading noise. Lines still visually skip over their
-        // positions by connecting the surviving incomplete nodes
-        // directly.
-        //
-        // Pinnacle boss icons (Black Star, Infinite Hunger, Searing
-        // Exarch, ...) are not tracked in ServerData.CompletedNodes -
-        // their completion lives in QuestFlags. IsPinnacleDone reads
-        // the matching snapshot state (Eldritch chain, PinnacleBosses)
-        // and lets us skip those icons too.
-        var points = new List<(Vector2 Center, float Radius, AtlasMapNode Node)>(path.Nodes.Count);
-        foreach (var node in path.Nodes)
-        {
-            if (IsNodeDone(node, snapshot)) continue;
-            if (!AtlasProjection.TryGetIconRect(atlas, node.Position, NodeRingWorldSize, out var rect))
-                continue;
+        // Union bookkeeping - a node that survives filtering on ONE
+        // path (rings, labels) should not be re-drawn if another path
+        // also passes through it. Line segments dedupe by endpoint pair.
+        var nodeCenters = new Dictionary<string, (Vector2 Center, float Radius, AtlasMapNode Node)>();
+        var drawnEdges = new HashSet<(string, string)>();
 
-            var center = new Vector2(rect.X + rect.Width * 0.5f, rect.Y + rect.Height * 0.5f);
-            var radius = (rect.Width < rect.Height ? rect.Width : rect.Height) * 0.5f;
-            points.Add((center, radius, node));
+        // First pass: project each path independently and stage its
+        // incomplete points in walk order. Completed maps and defeated
+        // pinnacle icons drop out here so lines below hop over their
+        // positions.
+        var perPathPoints = new List<List<(Vector2 Center, float Radius, AtlasMapNode Node)>>(paths.Count);
+        foreach (var path in paths)
+        {
+            var points = new List<(Vector2, float, AtlasMapNode)>(path.Nodes.Count);
+            foreach (var node in path.Nodes)
+            {
+                if (IsNodeDone(node, snapshot)) continue;
+                if (!AtlasProjection.TryGetIconRect(atlas, node.Position, NodeRingWorldSize, out var rect))
+                    continue;
+
+                var center = new Vector2(rect.X + rect.Width * 0.5f, rect.Y + rect.Height * 0.5f);
+                var radius = (rect.Width < rect.Height ? rect.Width : rect.Height) * 0.5f;
+                points.Add((center, radius, node));
+
+                nodeCenters[node.AreaId] = (center, radius, node);
+            }
+            perPathPoints.Add(points);
         }
 
-        if (points.Count == 0) return;
-
-        // Second pass: draw lines edge-to-edge (from ring perimeter to
-        // ring perimeter) so they visually connect the circles instead
-        // of passing through them.
-        for (var i = 1; i < points.Count; i++)
+        // Lines edge-to-edge, deduped across paths.
+        foreach (var points in perPathPoints)
         {
-            var (aCenter, aRadius, _) = points[i - 1];
-            var (bCenter, bRadius, _) = points[i];
-            var delta = bCenter - aCenter;
-            var dist = delta.Length();
-            if (dist < 1f) continue;
-            var direction = delta / dist;
-            var lineStart = aCenter + direction * aRadius;
-            var lineEnd = bCenter - direction * bRadius;
-            graphics.DrawLine(lineStart, lineEnd, LineThickness, PathColor);
+            for (var i = 1; i < points.Count; i++)
+            {
+                var (aCenter, aRadius, aNode) = points[i - 1];
+                var (bCenter, bRadius, bNode) = points[i];
+
+                var key = string.CompareOrdinal(aNode.AreaId, bNode.AreaId) < 0
+                    ? (aNode.AreaId, bNode.AreaId)
+                    : (bNode.AreaId, aNode.AreaId);
+                if (!drawnEdges.Add(key)) continue;
+
+                var delta = bCenter - aCenter;
+                var dist = delta.Length();
+                if (dist < 1f) continue;
+                var direction = delta / dist;
+                var lineStart = aCenter + direction * aRadius;
+                var lineEnd = bCenter - direction * bRadius;
+                graphics.DrawLine(lineStart, lineEnd, LineThickness, PathColor);
+            }
         }
 
-        // Third pass: rings under labels.
-        foreach (var (center, radius, _) in points)
+        // Rings + labels per unique node.
+        foreach (var (center, radius, node) in nodeCenters.Values)
+        {
             graphics.DrawCircle(center, radius, PathColor, RingThickness, RingSegments);
 
-        // Fourth pass: labels centered on each node, with background
-        // panel drawn behind them for legibility over the atlas art.
-        foreach (var (center, _, node) in points)
-        {
             var text = LabelFor(node);
             if (text.Length == 0) continue;
 
