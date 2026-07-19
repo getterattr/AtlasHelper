@@ -24,8 +24,5 @@ An ordered sequence of tier-gated map runs required to spawn a pinnacle boss inv
 ## Kirac Mission
 A map handed out by NPC Kirac. Guaranteed to first spawn on the player's first T14 run when no chain is already active. The map he offers can be steered by choosing which T14 to run.
 
-## Atlas Tree Preset
-A named allocation of atlas passive points tailored to a Phase. Presets in scope: **Rush**, **Exarch Altars**, **Destructive Play (Bossing)**, **Essence Fallback**.
-
 ## Run Priority
 The rule set that picks the next map to run. Default rule: run the highest-tier map available. Exception: when a Quest Chain requires a specific tier to progress, run that tier instead.

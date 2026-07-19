@@ -137,8 +137,13 @@ Sources:
 
 ## Bonus completion targets
 
-- **Normal maps**: 100 bonus points. One per atlas-tree map boss killed at native tier (magic rarity is sufficient).
-- **Unique maps**: 10 bonus points. Approximately 20 unique maps exist (distinctive orange icons on the atlas). Only a subset yields the 10 bonus points, and each qualifying unique first-completion is worth 2 points. The exact qualifying subset is not enumerated in a single source; the player only needs to complete enough to reach 10.
+- **Normal maps**: 100 bonus points. One per atlas-tree map boss killed at native tier.
+- **Unique maps**: 10 bonus points, capped. **1 point per first-completion**, credited for the **first 10 unique maps** completed. There are ~20 unique maps in the game (distinctive orange icons on the atlas); completions beyond the tenth grant no additional bonus point. Any 10 uniques satisfy the cap - the player may skip the ones they dislike.
 
-Source:
+Source ([GAMES.GG Mirage Atlas Guide](https://games.gg/path-of-exile/guides/path-of-exile-mirage-league-atlas-guide/)) verbatim:
+
+> You earn 10 points from Unique Maps, and there are around 20 Unique Maps available, with you only needing to complete 10, so you can skip the ones you dislike.
+
+Additional references:
 - [Atlas Progression Guide | PoE Vault](https://www.poe-vault.com/guides/atlas-progression-strategy-guide)
+- [List of unique maps | PoE Wiki](https://pathofexile.fandom.com/wiki/List_of_unique_maps)
