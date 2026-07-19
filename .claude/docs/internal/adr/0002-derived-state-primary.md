@@ -6,7 +6,7 @@ Accepted - 2026-07-19
 ## Context
 The plugin needs to know: current Phase, voidstone count, atlas bonus completion %, Exarch/Eater Quest Chain progress, Maven witness count, current map's bonus/chain relevance. Most of this is available from live game memory via ExileApi.
 
-A tempting alternative is per-character JSON persistence: track Phase overrides, Kirac steering history, session logs, branch selection, etc., keyed by character name and league.
+A tempting alternative is per-character JSON persistence: track Phase overrides, Kirac steering history, session logs, Strategy selection, etc., keyed by character name and league.
 
 The user's directive is explicit: this plugin stays lightweight. It should not accumulate complexity beyond what the transcript-derived strategy actually requires.
 

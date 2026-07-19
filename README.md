@@ -29,4 +29,8 @@ An ExileApi overlay plugin for Path of Exile. Guides league-start atlas progress
 
 ## Setup
 
-> TODO
+1. Open the AtlasHelper settings panel in the ExileApi menu and expand **Overview** to confirm plugin state, current phase, strategy, and HUD visibility.
+2. Expand **Progression** and pick a **Strategy** - `Destructive Play` (self-farm the final voidstones) or `Exarch Altars` (currency-farm to buy a carry). Leave **Phase Override** on `Auto` unless you want to preview a later phase.
+3. Open **Progression > Help > Reference** for a compact table of what each phase and strategy means.
+4. Expand **HUD Overlay** to tune the always-on panel: `Show`, `Text Scale`, `Text Color`, `Background Color`. Use the alpha channel on the color wheel for translucent overlays.
+5. Toggle the HUD in-game with `F3` (rebindable under **HUD Overlay > Toggle Hotkey**).
