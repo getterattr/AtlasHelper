@@ -48,6 +48,35 @@ User specified. Reference implementation is `Repositories/Stranded/Pathfinder/`.
 ### State model: derived from game memory, minimal settings
 Captured in [ADR 0002](adr/0002-derived-state-primary.md). Persistence is limited to the standard `BaseSettingsPlugin` settings file, plugin-global (not per-character, not per-league). Settings surface: Phase override, show/hide toggles.
 
+### Read pattern: Files for base data, ServerData for state
+Emerging rule from the readers audit. `Files.*` holds the invariant catalog (all atlas nodes, all passive skills, all quest flag definitions, all world areas). `ServerData.*` holds this character's runtime state. Every reader should read the catalog from Files to establish "what exists" and then overlay ServerData to determine "what the player has done". The `PassivesReader` is the reference implementation; the other readers pre-date this rule and need remediation - see the audit table below.
+
+## Reader audit vs Files-first rule
+
+Snapshot of correctness as of the current commit. "Files-first?" column marks readers that establish their base data from `Files.*` before overlaying `ServerData.*`.
+
+| Reader | Files-first? | Gap |
+|---|---|---|
+| VoidstoneReader | No | Reads UI (`IngameUi.Atlas`), null when panel closed. Slot -> corner -> kind mapping hardcoded. |
+| CompletionReader | No | Total denominators (100 normal, 10 unique) are hardcoded constants; no Files enumeration. `UniqueBonusCount` currently returns 0 - source unknown. |
+| MavenReader | N/A | Witness count is intrinsic state; no meaningful Files base. |
+| PassivesReader | **Yes** | Reference pattern. `Files.PassiveSkills` supplies name/id lookup; `ServerData.AtlasPassiveSkillIds` supplies allocated set. |
+| TreeReader | Partial | Walks the full graph via `.Connections` BFS, but the seed is `ServerData.CompletedNodes[0]`. A character with no completed maps yields an empty tree. Real base is `Data/AtlasNode.dat`. |
+| QuestFlagLookup | No | Enumerates `ServerData.QuestFlags` only; never validates against `Files.QuestFlags.EntriesList`, so unknown flag names silently return null. |
+| BeaconReader / InvitationProgressReader / PinnacleCompletionReader | No | All use hardcoded placeholder flag names that resolve to null. Real names TBD until log dump. |
+
+## Open TBDs
+
+Investigation items that block Files-first correctness. To be converted to local issues.
+
+| # | Question | Blocking |
+|---|---|---|
+| A | Where does unique-map bonus-completion state live? Not in `BonusCompletedNodes` per empirical test. | `CompletionReader.UniqueBonusCount` stuck at 0. |
+| B | Canonical `QuestFlag` names for each pinnacle kill, beacon acquisition, and Maven's Crucible stage completion. | Beacons, invitation stage, pinnacle completion snapshots are null. |
+| C | Does ExileCore expose a typed wrapper for `Data/AtlasNode.dat`? If not, write a minimal reader. | TreeReader cannot bootstrap without a completed node seed. |
+| D | Voidstone slot-index -> corner mapping stability across leagues. | Currently hardcoded from 3.28 empirical observation; could break next league. |
+| E | Are 100 normal / 10 unique targets defined in-engine? Where? | Constants are magic numbers; would prefer a Files-sourced lookup for future-proofing. |
+
 ## Blocking spike before implementation
 
 Verify via ExileApi MCP bridge that each of the following is readable from game memory. Any value that isn't collapses into a manual setting:
