@@ -1,4 +1,5 @@
 using AtlasHelper.GameState;
+using AtlasHelper.GameState.Voidstones;
 
 namespace AtlasHelper.Services;
 
@@ -29,9 +30,28 @@ public static class Phase
 {
     public static PhaseInference From(AtlasSnapshot snapshot)
     {
-        // Placeholder implementation - returns default until workstream 3
-        // (see roadmap.md) fleshes out phase inference against voidstones,
-        // completion counts, and chain state.
-        return PhaseInference.Default;
+        var eldritchSocketed = IsSocketed(snapshot.Voidstones, VoidstoneKind.Eldritch);
+        if (!eldritchSocketed)
+            return new PhaseInference(PhaseId.One, "Eldritch not socketed");
+
+        var originatorSocketed = IsSocketed(snapshot.Voidstones, VoidstoneKind.Originator);
+        if (!originatorSocketed)
+            return new PhaseInference(PhaseId.Two, "Eldritch socketed, Originator pending");
+
+        // Phase 3 = both first voidstones socketed, bonus not yet 100/100 + 10/10.
+        // Phase 4 = both first voidstones socketed, bonus complete, working on Decayed/Ceremonial.
+        var bonusComplete = snapshot.Completion.NormalBonusComplete
+                         && snapshot.Completion.UniqueBonusComplete;
+        if (!bonusComplete)
+            return new PhaseInference(PhaseId.Three, "voidstones 1-2 socketed, bonus incomplete");
+
+        return new PhaseInference(PhaseId.Four, "bonus complete, Decayed/Ceremonial pending");
+    }
+
+    private static bool IsSocketed(VoidstoneState voidstones, VoidstoneKind kind)
+    {
+        foreach (var slot in voidstones.Slots)
+            if (slot.Kind == kind && slot.Socketed) return true;
+        return false;
     }
 }

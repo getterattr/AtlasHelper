@@ -13,6 +13,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     private readonly GameStateReader _state = new();
     private FlagDiagnostics _flagDiagnostics;
     private SnapshotHealth _snapshotHealth;
+    private AtlasNodeDump _atlasNodeDump;
 
     public AtlasHelper()
     {
@@ -36,6 +37,11 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
             TimeSpan.FromSeconds(30),
             msg => LogMessage(msg, 10f),
             msg => LogError(msg, 30f));
+
+        _atlasNodeDump = new AtlasNodeDump(
+            DirectoryFullName,
+            msg => LogMessage(msg, 10f),
+            msg => LogError(msg, 30f));
     }
 
     public override void OnClose()
@@ -43,6 +49,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         base.OnClose();
         _flagDiagnostics = null;
         _snapshotHealth = null;
+        _atlasNodeDump = null;
     }
 
     public override void AreaChange(AreaInstance area)
@@ -55,6 +62,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         _state.RefreshIfStale(GameController);
         _flagDiagnostics?.RunOnce(GameController);
         _snapshotHealth?.CheckOnce(_state.Current);
+        _atlasNodeDump?.RunOnce(GameController);
         return null;
     }
 
@@ -64,6 +72,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
             Settings.Hud.Show.Value = !Settings.Hud.Show.Value;
 
         var atlas = GameController?.IngameState?.IngameUi?.Atlas;
+        PathOverlay.Draw(Graphics, Settings, atlas, _state.Current);
         AtlasOverlay.Draw(Graphics, Settings, atlas, _state.Current);
 
         if (!Settings.Hud.Show.Value)

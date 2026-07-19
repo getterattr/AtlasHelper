@@ -1,11 +1,15 @@
 using System.Numerics;
 using AtlasHelper.GameState;
 using AtlasHelper.GameState.Atlas;
+using AtlasHelper.Services;
 using ExileCore.PoEMemory.Elements;
 using Graphics = ExileCore.Graphics;
 
 namespace AtlasHelper.Ui.Overlays;
 
+// Phase-3 render surface. Highlights every uncompleted bonus-eligible
+// node so the player can sweep them. Phase 1 and Phase 2 paths are
+// drawn by PathOverlay instead.
 internal static class AtlasOverlay
 {
     private const float NodeIconSize = 53f;
@@ -25,6 +29,8 @@ internal static class AtlasOverlay
         var overlay = settings.AtlasOverlay;
         if (!overlay.Show.Value) return;
         if (atlas == null || !atlas.IsVisible) return;
+
+        if (ResolvePhase(settings, state) != PhaseId.Three) return;
 
         var canvas = atlas.GetChildAtIndex(0);
         var canvasChildren = canvas?.Children;
@@ -84,6 +90,18 @@ internal static class AtlasOverlay
             var radius = (rect.Width < rect.Height ? rect.Width : rect.Height) * 0.5f;
             graphics.DrawCircle(centre, radius, color, thickness, CircleSegments);
         }
+    }
+
+    private static PhaseId ResolvePhase(AtlasHelperSettings settings, AtlasSnapshot snapshot)
+    {
+        return settings.Progression.PhaseOverride.Value switch
+        {
+            "Phase 1" => PhaseId.One,
+            "Phase 2" => PhaseId.Two,
+            "Phase 3" => PhaseId.Three,
+            "Phase 4" => PhaseId.Four,
+            _ => Phase.From(snapshot).Id,
+        };
     }
 
     private static AtlasMapNode? FindNearest(AtlasTree tree, float worldX, float worldY)
