@@ -21,5 +21,6 @@ Ui/          rendering    (how to SHOW it)
 ## Files
 
 - `Phase.cs` - phase inference (Phase 1-4 based on voidstones + bonus + chain state).
+- `Pathfinding.cs` - BFS across the atlas graph. Currently exposes "nearest T1" for Phase 1 unlock planning (path to Polaric Void, Seething Chime); the shape scales to other predicates.
 
 More arrive as workstream 3 lands - see [roadmap](../.claude/docs/internal/roadmap.md#3-business-synthesis-blocked-by-2-degrades-gracefully-without-1).
