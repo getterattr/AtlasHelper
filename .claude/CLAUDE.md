@@ -13,6 +13,7 @@
    - `0001-scope-league-start-only.md` - plugin is league-start only, do not add late-league features.
    - `0002-derived-state-primary.md` - state is derived from game memory; only the standard `BaseSettingsPlugin` settings file persists user config.
    - `0003-gamestate-facade.md` - all GameController reads live under `GameState/`; consumers bind to `AtlasSnapshot`.
+   - `0004-files-first-read-pattern.md` - readers pull base catalogs from `Files.*` and overlay `ServerData.*` state; PassivesReader is the reference implementation.
 7. Load relevant skills based on your task (skills live in `~/.claude/skills/` and load on demand):
    - `exileapi` - ExileApi API reference, lifecycle, performance rules
    - `bridge` - Query live game state via the MCP bridge

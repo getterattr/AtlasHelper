@@ -16,6 +16,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     };
 
     private readonly GameStateReader _state = new();
+    private readonly AtlasProjection _atlasProjection = new();
     private bool _flagsDumped;
 
     public AtlasSnapshot State => _state.Current;
@@ -30,6 +31,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     public override void AreaChange(AreaInstance area)
     {
         _state.Refresh(GameController);
+        _atlasProjection.Invalidate();
     }
 
     public override Job Tick()
@@ -55,6 +57,9 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     {
         if (Settings.Hud.ToggleHotkey.PressedOnce())
             Settings.Hud.Show.Value = !Settings.Hud.Show.Value;
+
+        var atlas = GameController?.IngameState?.IngameUi?.Atlas;
+        AtlasOverlay.Draw(Graphics, Settings, atlas, _state.Current, _atlasProjection);
 
         if (!Settings.Hud.Show.Value)
             return;

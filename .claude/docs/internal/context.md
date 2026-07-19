@@ -29,8 +29,8 @@ Captured in [ADR 0001](adr/0001-scope-league-start-only.md). Rejected the "gener
 ### Surfaces (out of scope)
 - **Map inventory highlighting** - would require modelling held map items and detecting inventory panel state. Not worth the complexity.
 - **Atlas passive-tree overlay** - high effort (zoomable/pannable node coordinates) for a 4-times-per-league decision. Static images on the guide author's site already solve it.
-- **Atlas passive preset guidance** (Rush / Exarch Altars / Destructive Play / Essence Fallback text checklists) - rots every league when GGG rebalances; orthogonal to map-run decisions.
-- **Kirac steering suggestions** - deferred.
+- **Atlas passive preset checklists** (Rush / Exarch Altars / Destructive Play / Essence Fallback as clickable UI) - rots every league when GGG rebalances. The plugin does name specific atlas passives when they gate a Phase step (e.g. Polaric Void and Seething Chime as Phase 1 T11 prerequisites - see [strategy.md](docs/internal/strategy.md)), but it does not ship the full preset UI.
+- **Kirac steering suggestions** - not in strategy.md; out of scope.
 - **Per-character persistence, session logs, analytics** - see next decision.
 
 ### Recommendation style: advisory, not prescriptive
@@ -49,7 +49,7 @@ User specified. Reference implementation is `Repositories/Stranded/Pathfinder/`.
 Captured in [ADR 0002](adr/0002-derived-state-primary.md). Persistence is limited to the standard `BaseSettingsPlugin` settings file, plugin-global (not per-character, not per-league). Settings surface: Phase override, show/hide toggles.
 
 ### Read pattern: Files for base data, ServerData for state
-Emerging rule from the readers audit. `Files.*` holds the invariant catalog (all atlas nodes, all passive skills, all quest flag definitions, all world areas). `ServerData.*` holds this character's runtime state. Every reader should read the catalog from Files to establish "what exists" and then overlay ServerData to determine "what the player has done". The `PassivesReader` is the reference implementation; the other readers pre-date this rule and need remediation - see the audit table below.
+Captured in [ADR 0004](adr/0004-files-first-read-pattern.md). `Files.*` holds the invariant catalog (all atlas nodes, all passive skills, all quest flag definitions, all world areas). `ServerData.*` holds this character's runtime state. Every reader reads the catalog from Files to establish "what exists" and then overlays ServerData to determine "what the player has done". The `PassivesReader` is the reference implementation; the other readers pre-date this rule and need remediation - see the audit table below.
 
 ## Reader audit vs Files-first rule
 
@@ -60,8 +60,7 @@ Snapshot of correctness as of the current commit. "Files-first?" column marks re
 | VoidstoneReader | No | Reads UI (`IngameUi.Atlas`), null when panel closed. Slot -> corner -> kind mapping hardcoded. |
 | CompletionReader | No | Total denominators (100 normal, 10 unique) are hardcoded constants; no Files enumeration. `UniqueBonusCount` currently returns 0 - source unknown. |
 | MavenReader | N/A | Witness count is intrinsic state; no meaningful Files base. |
-| PassivesReader | **Yes** | Reference pattern. `Files.PassiveSkills` supplies name/id lookup; `ServerData.AtlasPassiveSkillIds` supplies allocated set. |
-| TreeReader | Partial | Walks the full graph via `.Connections` BFS, but the seed is `ServerData.CompletedNodes[0]`. A character with no completed maps yields an empty tree. Real base is `Data/AtlasNode.dat`. |
+| TreeReader | Partial | Walks the full graph via `.Connections` BFS, but the seed is `ServerData.CompletedNodes[0]`. A character with no completed maps yields an empty tree. Real base is `Data/AtlasNode.dat` - see TBD C. This is the reader that becomes the Files-first reference implementation once retrofitted. |
 | QuestFlagLookup | No | Enumerates `ServerData.QuestFlags` only; never validates against `Files.QuestFlags.EntriesList`, so unknown flag names silently return null. |
 | BeaconReader / InvitationProgressReader / PinnacleCompletionReader | No | All use hardcoded placeholder flag names that resolve to null. Real names TBD until log dump. |
 
@@ -76,16 +75,19 @@ Investigation items that block Files-first correctness. To be converted to local
 | C | Does ExileCore expose a typed wrapper for `Data/AtlasNode.dat`? If not, write a minimal reader. | TreeReader cannot bootstrap without a completed node seed. |
 | D | Voidstone slot-index -> corner mapping stability across leagues. | Currently hardcoded from 3.28 empirical observation; could break next league. |
 | E | Are 100 normal / 10 unique targets defined in-engine? Where? | Constants are magic numbers; would prefer a Files-sourced lookup for future-proofing. |
+| F | Which QuestFlags track intermediate stages of the Exarch and Eater chains (e.g. Black Star kill, first Polaric/Screaming Invitation drop, T14 boss kill etc.)? | Without stage-granularity flags the HUD cannot show "on step N of the Exarch chain" - only the final voidstone booleans. Same log-dump path as TBD B, extended to include chain-step keywords. |
 
-## Blocking spike before implementation
+## Blocking-spike status
 
-Verify via ExileApi MCP bridge that each of the following is readable from game memory. Any value that isn't collapses into a manual setting:
+Live tracker for the values the plugin needs to read from game memory. Each row is a spike outcome. Any row not `Resolved` is either linked to a TBD in the section below or annotated with the manual-setting fallback.
 
-- Voidstone count (0-4)
-- Maven witness count (X/10)
-- Per-map bonus-completion state
-- Current Exarch and Eater Quest Chain step
-- Atlas map-tree node data (map name, tier, connections, current position)
+| Spike | Status | Reader | Notes |
+|---|---|---|---|
+| Voidstone count (0-4) and per-slot socket state | Resolved | `VoidstoneReader` | Reads `IngameUi.Atlas.VoidstoneSlots`; UI dependency documented in the audit above. |
+| Maven witness count (X/10) | Resolved | `MavenReader` | `ServerData.MavenWitnessedAreas.Count`. |
+| Per-map bonus-completion state | Partial | `CompletionReader` | Normal count correct via `ServerData.BonusCompletedNodes`. Unique count stuck at 0 - see TBD A. |
+| Current Exarch and Eater chain step | Unresolved | none | Chain-step QuestFlag names unidentified - see TBD F. |
+| Atlas map-tree node data (name, tier, connections, position) | Resolved (with caveat) | `TreeReader` | Full graph reached via BFS through `.Connections`; seed is `ServerData.CompletedNodes[0]`. Files-first bootstrap tracked as TBD C. |
 
 ## Implementation order (post-spike)
 

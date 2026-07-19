@@ -40,14 +40,12 @@ internal static class HudOverlay
     private static void DrawBody(AtlasHelperSettings settings, AtlasSnapshot state)
     {
         ImGui.Text($"Phase:       {settings.Progression.PhaseOverride.Value}");
-        ImGui.Text($"Strategy:    {settings.Progression.Strategy.Value}");
         ImGui.Separator();
 
         ImGui.Text($"Voidstones:  {state.Voidstones.SocketedCount} / 4");
         ImGui.Text($"Normal maps: {state.Completion.NormalBonusCount} / {AtlasCompletion.NormalBonusTarget}");
         ImGui.Text($"Unique maps: {state.Completion.UniqueBonusCount} / {AtlasCompletion.UniqueBonusTarget}");
         ImGui.Text($"Maven:       {state.Maven.WitnessCount} / {MavenState.InvitationTarget}");
-        ImGui.Text($"Passives:    {state.Passives.Count} allocated");
     }
 
     private static void PopStyles()

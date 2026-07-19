@@ -31,7 +31,6 @@ public sealed class GameStateReader
             VoidstoneReader.Read(gc),
             CompletionReader.Read(gc),
             MavenReader.Read(gc),
-            PassivesReader.Read(gc),
             TreeReader.Read(gc),
             BeaconReader.Read(flags),
             InvitationProgressReader.Read(gc, flags),

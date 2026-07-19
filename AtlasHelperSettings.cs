@@ -22,6 +22,9 @@ public class AtlasHelperSettings : ISettings
 
     [Menu("HUD Overlay", "The always-on HUD panel showing Phase, voidstones, completion, and chain progress.")]
     public HudOverlaySettings Hud { get; set; } = new();
+
+    [Menu("Atlas Overlay", "Highlights over uncompleted atlas map nodes when the atlas panel is open.")]
+    public AtlasOverlaySettings AtlasOverlay { get; set; } = new();
 }
 
 [Submenu(CollapsedByDefault = true)]
@@ -34,21 +37,14 @@ public class ProgressionSettings
         Value = "Auto",
     };
 
-    [Menu("Strategy", "How you plan to acquire the 3rd and 4th voidstones.")]
-    public ListNode Strategy { get; set; } = new()
-    {
-        Values = new List<string> { "Destructive Play", "Exarch Altars" },
-        Value = "Destructive Play",
-    };
-
-    [Menu("Help", "Phase and strategy definitions.")]
+    [Menu("Help", "Phase definitions.")]
     public ProgressionHelpSettings Help { get; set; } = new();
 }
 
 [Submenu(CollapsedByDefault = true)]
 public class ProgressionHelpSettings
 {
-    [Menu("Reference", "Phase and strategy definitions.")]
+    [Menu("Reference", "Phase definitions.")]
     [JsonIgnore]
     public CustomNode Reference { get; set; } = new();
 }
@@ -70,4 +66,20 @@ public class HudOverlaySettings
 
     [Menu("Background Color", "HUD background color. Use the alpha channel on the color wheel to make the panel translucent.")]
     public ColorNode BackgroundColor { get; set; } = new(new Color(0, 0, 0, 200));
+}
+
+[Submenu(CollapsedByDefault = true)]
+public class AtlasOverlaySettings
+{
+    [Menu("Show", "Draw highlights over uncompleted atlas nodes while the atlas panel is open.")]
+    public ToggleNode Show { get; set; } = new(true);
+
+    [Menu("Include Unique Maps", "Also highlight unique atlas nodes (10-cap bonus points).")]
+    public ToggleNode IncludeUniques { get; set; } = new(false);
+
+    [Menu("Highlight Color", "Color of the outlined highlight over an uncompleted node.")]
+    public ColorNode HighlightColor { get; set; } = new(new Color(255, 200, 60, 220));
+
+    [Menu("Border Thickness", "Stroke width of the highlight border in pixels.")]
+    public RangeNode<float> BorderThickness { get; set; } = new(2f, 1f, 6f);
 }

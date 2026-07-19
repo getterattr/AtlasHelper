@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Numerics;
 using ExileCore;
-using ExileCore.PoEMemory.MemoryObjects;
 
 namespace AtlasHelper.GameState.Readers;
 
@@ -9,52 +8,45 @@ internal static class TreeReader
 {
     public static AtlasTree Read(GameController gc)
     {
-        var server = gc.IngameState.Data.ServerData;
-        var completed = server.CompletedNodes;
-        var bonusCompleted = server.BonusCompletedNodes;
-        if (completed == null || completed.Count == 0)
+        var catalog = gc.Files?.AtlasNodes?.EntriesList;
+        if (catalog == null || catalog.Count == 0)
             return AtlasTree.Empty;
 
+        var server = gc.IngameState.Data.ServerData;
         var completedIds = new HashSet<string>();
-        foreach (var node in completed)
-            if (node?.Area?.Id is { } id) completedIds.Add(id);
-
         var bonusIds = new HashSet<string>();
-        if (bonusCompleted != null)
+
+        if (server?.CompletedNodes != null)
         {
-            foreach (var node in bonusCompleted)
+            foreach (var node in server.CompletedNodes)
+                if (node?.Area?.Id is { } id) completedIds.Add(id);
+        }
+        if (server?.BonusCompletedNodes != null)
+        {
+            foreach (var node in server.BonusCompletedNodes)
                 if (node?.Area?.Id is { } id) bonusIds.Add(id);
         }
 
-        var nodes = new Dictionary<string, AtlasMapNode>();
-        var queue = new Queue<AtlasNode>();
-        foreach (var node in completed)
-            queue.Enqueue(node);
-
-        while (queue.Count > 0)
+        var nodes = new Dictionary<string, AtlasMapNode>(catalog.Count);
+        foreach (var entry in catalog)
         {
-            var current = queue.Dequeue();
-            if (current?.Area?.Id is not { } areaId || nodes.ContainsKey(areaId))
-                continue;
+            if (entry?.Area?.Id is not { } areaId) continue;
+            if (nodes.ContainsKey(areaId)) continue;
 
             var connectionIds = new List<string>();
-            if (current.Connections != null)
+            if (entry.Connections != null)
             {
-                foreach (var neighbour in current.Connections)
-                {
-                    if (neighbour?.Area?.Id is not { } neighbourId) continue;
-                    connectionIds.Add(neighbourId);
-                    if (!nodes.ContainsKey(neighbourId))
-                        queue.Enqueue(neighbour);
-                }
+                foreach (var neighbour in entry.Connections)
+                    if (neighbour?.Area?.Id is { } neighbourId)
+                        connectionIds.Add(neighbourId);
             }
 
             nodes[areaId] = new AtlasMapNode(
                 areaId,
-                current.Area.Name ?? string.Empty,
-                current.BaseTier,
-                new Vector2(current.PosX, current.PosY),
-                current.IsUniqueMap,
+                entry.Area.Name ?? string.Empty,
+                entry.BaseTier,
+                new Vector2(entry.PosX, entry.PosY),
+                entry.IsUniqueMap,
                 connectionIds,
                 completedIds.Contains(areaId),
                 bonusIds.Contains(areaId));
