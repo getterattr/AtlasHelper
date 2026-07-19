@@ -13,6 +13,9 @@ public class AtlasHelperSettings : ISettings
     [Menu("Enabled", "Enable or disable the AtlasHelper plugin.")]
     public ToggleNode Enable { get; set; } = new(false);
 
+    [Menu("Debug Logs", "Write detailed logs to aid troubleshooting.")]
+    public ToggleNode DebugLogging { get; set; } = new(false);
+
     [Menu("Overview", "Snapshot of your current configuration.")]
     [JsonIgnore]
     public CustomNode Overview { get; set; } = new();

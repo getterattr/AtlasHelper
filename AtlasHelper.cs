@@ -10,25 +10,38 @@ namespace AtlasHelper;
 public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
     private readonly GameStateReader _state = new();
-    private FlagDiagnostics _flagDiagnostics = null!;
-    private SnapshotHealth _snapshotHealth = null!;
+    private FlagDiagnostics _flagDiagnostics;
+    private SnapshotHealth _snapshotHealth;
+
+    public AtlasHelper()
+    {
+        Name = "AtlasHelper";
+    }
 
     public AtlasSnapshot State => _state.Current;
 
-    public override bool Initialise()
+    public override void OnLoad()
     {
         Settings.Overview.DrawDelegate = () => OverviewPanel.Draw(Settings);
         Settings.ConfigurationHeader.DrawDelegate = OverviewPanel.DrawConfigurationHeader;
         Settings.Progression.Reference.DrawDelegate = ProgressionReferencePanel.Draw;
+
         _flagDiagnostics = new FlagDiagnostics(
             DirectoryFullName,
             msg => LogMessage(msg, 10f),
             msg => LogError(msg, 30f));
+
         _snapshotHealth = new SnapshotHealth(
             TimeSpan.FromSeconds(30),
             msg => LogMessage(msg, 10f),
             msg => LogError(msg, 30f));
-        return true;
+    }
+
+    public override void OnClose()
+    {
+        base.OnClose();
+        _flagDiagnostics = null;
+        _snapshotHealth = null;
     }
 
     public override void AreaChange(AreaInstance area)
@@ -39,8 +52,8 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     public override Job Tick()
     {
         _state.RefreshIfStale(GameController);
-        _flagDiagnostics.RunOnce(GameController);
-        _snapshotHealth.CheckOnce(_state.Current);
+        _flagDiagnostics?.RunOnce(GameController);
+        _snapshotHealth?.CheckOnce(_state.Current);
         return null;
     }
 
@@ -60,5 +73,11 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 
     public override void EntityAdded(Entity entity)
     {
+    }
+
+    internal void LogDebug(string message)
+    {
+        if (Settings?.DebugLogging?.Value != true) return;
+        try { DebugWindow.LogMsg($"[AtlasHelper] {message}"); } catch { }
     }
 }

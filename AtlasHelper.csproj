@@ -1,23 +1,35 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>latest</LangVersion>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <InformationalVersion>0.1.0</InformationalVersion>
+    <Authors>getterattr</Authors>
+    <Company>getterattr</Company>
+    <Product>AtlasHelper</Product>
+    <Description>Overlay plugin that surfaces atlas progression, voidstone status, and Maven chain state for league-start atlas questing.</Description>
+    <RepositoryUrl>https://github.com/getterattr/AtlasHelper</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/getterattr/AtlasHelper</PackageProjectUrl>
     <DebugType>embedded</DebugType>
     <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
     <EmbedAllSources>true</EmbedAllSources>
-    <!--Don't bother setting anything to do with the output path, HUD will do it for you if you put the source code inside Plugins/Source-->
+  </PropertyGroup>
+  <PropertyGroup>
+    <ExApiReferenceRoot Condition="'$(exapiPackage)' != ''">$(exapiPackage)</ExApiReferenceRoot>
+    <ExApiReferenceRoot Condition="'$(ExApiReferenceRoot)' == ''">$(MSBuildProjectDirectory)\..\..\..</ExApiReferenceRoot>
   </PropertyGroup>
   <ItemGroup>
-    <!--Rather than replacing this with absolute or relative paths, you should create an environment variable for wherever your HUD folder is-->
     <Reference Include="ExileCore">
-      <HintPath>$(exapiPackage)\ExileCore.dll</HintPath>
+      <HintPath>$(ExApiReferenceRoot)\ExileCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="GameOffsets">
-      <HintPath>$(exapiPackage)\GameOffsets.dll</HintPath>
+      <HintPath>$(ExApiReferenceRoot)\GameOffsets.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
