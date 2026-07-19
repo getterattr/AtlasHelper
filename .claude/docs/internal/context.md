@@ -78,6 +78,16 @@ Live tracker for the values the plugin needs to read from game memory.
 
 See [roadmap.md](roadmap.md) - workstream breakdown, dependencies, and current position.
 
+## UI layout
+
+Rendering lives under `Ui/`, split by audience:
+
+- `Ui/Overlays/` - in-game surfaces rendered while the player is playing (`HudOverlay`, `AtlasOverlay`, future `BossPathArrow`).
+- `Ui/Panels/` - settings-panel content rendered in the ExileApi menu (`OverviewPanel`, `ProgressionReferencePanel`).
+- `Ui/Theme.cs`, `Ui/ImGuiHelpers.cs` - shared styling and drawing utilities.
+
+`Ui/` was kept as-is rather than renamed to `Surfaces/`; the docs vocabulary uses "surfaces" both as a noun (rendering targets) and a verb (the validator surfaces flag names), which is mildly ambiguous, and `Ui/` is universally parsed in half a second by any C# reader.
+
 ## Reference plugins
 
 - `Repositories/BeastsV2/` - atlas map-device integration precedent (`Automation/MapDevice.Atlas.cs`).
