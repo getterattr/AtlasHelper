@@ -67,7 +67,7 @@ internal static class PathOverlay
 
         if (path.Length == 0) return;
 
-        RenderPath(graphics, atlas, path);
+        RenderPath(graphics, atlas, path, snapshot);
     }
 
     private static PhaseId ResolvePhase(AtlasHelperSettings settings, AtlasSnapshot snapshot)
@@ -139,7 +139,7 @@ internal static class PathOverlay
         return new AtlasPath(combined);
     }
 
-    private static void RenderPath(Graphics graphics, AtlasPanel atlas, AtlasPath path)
+    private static void RenderPath(Graphics graphics, AtlasPanel atlas, AtlasPath path, AtlasSnapshot snapshot)
     {
         // First pass: project every INCOMPLETE node on the path.
         // Completed nodes are the frontier (or already-cleared stops
@@ -147,10 +147,16 @@ internal static class PathOverlay
         // misleading noise. Lines still visually skip over their
         // positions by connecting the surviving incomplete nodes
         // directly.
+        //
+        // Pinnacle boss icons (Black Star, Infinite Hunger, Searing
+        // Exarch, ...) are not tracked in ServerData.CompletedNodes -
+        // their completion lives in QuestFlags. IsPinnacleDone reads
+        // the matching snapshot state (Eldritch chain, PinnacleBosses)
+        // and lets us skip those icons too.
         var points = new List<(Vector2 Center, float Radius, AtlasMapNode Node)>(path.Nodes.Count);
         foreach (var node in path.Nodes)
         {
-            if (node.Completed) continue;
+            if (IsNodeDone(node, snapshot)) continue;
             if (!AtlasProjection.TryGetIconRect(atlas, node.Position, NodeRingWorldSize, out var rect))
                 continue;
 
@@ -194,6 +200,31 @@ internal static class PathOverlay
                 center.Y - size.Y * 0.5f);
             graphics.DrawTextWithBackground(text, pos, LabelText, FontAlign.Left, LabelBackground);
         }
+    }
+
+    // Bridge between AtlasMapNode.Completed (which comes from
+    // ServerData.CompletedNodes) and quest-flag driven completion for
+    // pinnacle boss atlas icons, whose defeats live in QuestFlags
+    // (surfaced through snapshot state) rather than the completion
+    // node list.
+    private static bool IsNodeDone(AtlasMapNode node, AtlasSnapshot snapshot)
+    {
+        if (node.Completed) return true;
+
+        if (node.Kind != AtlasNodeKind.PinnacleBoss) return false;
+
+        return node.AreaId switch
+        {
+            "BlackStarBoss" => snapshot.Eldritch.Exarch.BlackStarDefeated == true,
+            "InfiniteHungerBoss" => snapshot.Eldritch.Eater.InfiniteHungerDefeated == true,
+            "SearingExarchBoss" => snapshot.PinnacleBosses.SearingExarch == true,
+            "EaterOfWorldsBoss" => snapshot.PinnacleBosses.EaterOfWorlds == true,
+            "ShaperBoss" => snapshot.PinnacleBosses.Shaper == true,
+            "ElderBoss" => snapshot.PinnacleBosses.Elder == true,
+            "MavenBoss" => snapshot.PinnacleBosses.Maven == true,
+            "SirusBoss" => snapshot.PinnacleBosses.Sirus == true,
+            _ => false,
+        };
     }
 
     private static string LabelFor(AtlasMapNode node) => node.Kind switch

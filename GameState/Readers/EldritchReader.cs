@@ -24,7 +24,8 @@ internal static class EldritchReader
             T10Cleared: flags.Get(AtlasQuestFlags.Voidstones.Eldritch.Eater.T10Cleared),
             T12Cleared: flags.Get(AtlasQuestFlags.Voidstones.Eldritch.Eater.T12Cleared),
             T14Cleared: flags.Get(AtlasQuestFlags.Voidstones.Eldritch.Eater.T14Cleared),
-            ScreamingInvitationDropped: flags.Get(AtlasQuestFlags.Voidstones.Eldritch.Eater.ScreamingInvitationDropped));
+            ScreamingInvitationDropped: flags.Get(AtlasQuestFlags.Voidstones.Eldritch.Eater.ScreamingInvitationDropped),
+            InfiniteHungerDefeated: flags.Get(AtlasQuestFlags.Voidstones.Eldritch.Eater.InfiniteHungerDefeated));
 
         return new Eldritch(exarch, eater);
     }

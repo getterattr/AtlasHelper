@@ -26,10 +26,11 @@ public sealed record EaterChain(
     bool? T10Cleared,
     bool? T12Cleared,
     bool? T14Cleared,
-    bool? ScreamingInvitationDropped)
+    bool? ScreamingInvitationDropped,
+    bool? InfiniteHungerDefeated)
 {
     public static EaterChain Empty { get; } =
-        new(null, null, null, null, null, null, null);
+        new(null, null, null, null, null, null, null, null);
 }
 
 public sealed record Eldritch(ExarchChain Exarch, EaterChain Eater)

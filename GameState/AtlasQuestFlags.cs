@@ -11,13 +11,23 @@ namespace AtlasHelper.GameState;
 internal static class AtlasQuestFlags
 {
     // Individual pinnacle boss kills. Sole owner in the catalog.
+    //
+    // Naming pattern from empirical dump (QuestFlagDump.tsv):
+    //   "Cleansing" family = Searing Exarch chain (fire theme)
+    //   "Consume" family   = Eater of Worlds chain (void theme)
+    //   "Boss"             = final pinnacle fight
+    //   "MiniBoss"         = mid-tier chain fight (Black Star, Infinite Hunger)
+    // Placeholders remain for pinnacles not yet defeated on any test
+    // character - they will surface as unresolved at plugin startup
+    // once someone runs the flag catalog against a fresh dump.
     public static class Pinnacles
     {
-        public const string Maven = "TheMavenComplete";
-        public const string Shaper = "ShaperComplete";
-        public const string Elder = "ElderComplete";
-        public const string SearingExarch = "SearingExarchComplete";
-        public const string EaterOfWorlds = "EaterOfWorldsComplete";
+        public const string Maven = "MavenEnragedDefeated";
+        public const string Shaper = "ShaperDefeated";
+        public const string Elder = "ElderDefeated";
+        public const string SearingExarch = "CleansingBossDefeated";
+        public const string EaterOfWorlds = "ConsumeBossDefeated";
+        // TODO: pin via dump on an Originator-progressed character
         public const string IncarnationOfDread = "IncarnationOfDreadComplete";
         public const string Sirus = "SirusDefeated";
     }
@@ -59,7 +69,8 @@ internal static class AtlasQuestFlags
                 public const string EnvoyMet = "EnvoyMet";
                 public const string InfluenceUnlocked = "SearingExarchInfluenceUnlocked";
                 public const string PolaricInvitationDropped = "PolaricInvitationDropped";
-                public const string BlackStarDefeated = "BlackStarDefeated";
+                // Confirmed via QuestFlagDump.tsv - Black Star = Exarch mini-boss.
+                public const string BlackStarDefeated = "CleansingMiniBossDefeated";
                 public const string T12Cleared = "SearingExarchT12Complete";
                 public const string T13Cleared = "SearingExarchT13Complete";
                 public const string T14Cleared = "SearingExarchT14Complete";
@@ -77,6 +88,8 @@ internal static class AtlasQuestFlags
                 public const string T12Cleared = "EaterOfWorldsT12Complete";
                 public const string T14Cleared = "EaterOfWorldsT14Complete";
                 public const string ScreamingInvitationDropped = "ScreamingInvitationDropped";
+                // Confirmed via QuestFlagDump.tsv - Infinite Hunger = Eater mini-boss.
+                public const string InfiniteHungerDefeated = "ConsumeMiniBossDefeated";
             }
         }
 
@@ -126,6 +139,7 @@ internal static class AtlasQuestFlags
         Voidstones.Eldritch.Eater.T9Cleared, Voidstones.Eldritch.Eater.T10Cleared,
         Voidstones.Eldritch.Eater.T12Cleared, Voidstones.Eldritch.Eater.T14Cleared,
         Voidstones.Eldritch.Eater.ScreamingInvitationDropped,
+        Voidstones.Eldritch.Eater.InfiniteHungerDefeated,
 
         Voidstones.Originator.EagonIntroduced, Voidstones.Originator.CourtyardCleared,
         Voidstones.Originator.ChambersCleared, Voidstones.Originator.TheatreCleared,
