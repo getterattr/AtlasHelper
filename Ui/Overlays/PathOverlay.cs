@@ -141,11 +141,16 @@ internal static class PathOverlay
 
     private static void RenderPath(Graphics graphics, AtlasPanel atlas, AtlasPath path)
     {
-        // First pass: project every node's center + ring radius. Skip
-        // nodes that fail projection (panel not open / canvas invalid).
+        // First pass: project every INCOMPLETE node on the path.
+        // Completed nodes are the frontier (or already-cleared stops
+        // en route) - the player has run them, so highlighting is
+        // misleading noise. Lines still visually skip over their
+        // positions by connecting the surviving incomplete nodes
+        // directly.
         var points = new List<(Vector2 Center, float Radius, AtlasMapNode Node)>(path.Nodes.Count);
         foreach (var node in path.Nodes)
         {
+            if (node.Completed) continue;
             if (!AtlasProjection.TryGetIconRect(atlas, node.Position, NodeRingWorldSize, out var rect))
                 continue;
 
