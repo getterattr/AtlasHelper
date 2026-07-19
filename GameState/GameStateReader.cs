@@ -25,15 +25,16 @@ public sealed class GameStateReader
             return _current;
 
         var flags = QuestFlagLookup.Build(gc);
+        var tree = TreeReader.Read(gc);
 
         _current = new AtlasSnapshot(
             DateTime.UtcNow,
-            TreeReader.Read(gc),
+            tree,
             CompletionReader.Read(gc),
             VoidstoneReader.Read(gc),
             EldritchReader.Read(flags),
-            OriginatorReader.Read(flags),
-            DecayedReader.Read(flags),
+            OriginatorReader.Read(flags, tree),
+            DecayedReader.Read(tree),
             PinnacleBossesReader.Read(flags),
             WitnessesReader.Read(gc),
             AtlasInvitationReader.Read(gc, flags),

@@ -1,16 +1,36 @@
+using AtlasHelper.GameState.Atlas;
 using AtlasHelper.GameState.Voidstones;
 
 namespace AtlasHelper.GameState.Readers;
 
 internal static class DecayedReader
 {
-    public static Decayed Read(QuestFlagLookup flags) => new(
-        ChimeraDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.ChimeraDefeated),
-        HydraDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.HydraDefeated),
-        MinotaurDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.MinotaurDefeated),
-        PhoenixDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.PhoenixDefeated),
-        EnslaverDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.EnslaverDefeated),
-        ConstrictorDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.ConstrictorDefeated),
-        PurifierDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.PurifierDefeated),
-        EradicatorDefeated: flags.Get(AtlasQuestFlags.Voidstones.Decayed.EradicatorDefeated));
+    // Guardian atlas node ids per AtlasNodeDump.tsv. Completion lives
+    // in ServerData.CompletedNodes (surfaced via AtlasMapNode.Completed);
+    // no per-guardian quest flags exist.
+    private const string ChimeraId = "MapWorldsChimera";
+    private const string HydraId = "MapWorldsHydra";
+    private const string MinotaurId = "MapWorldsMinotaur";
+    private const string PhoenixId = "MapWorldsPhoenix";
+    private const string EnslaverId = "MapWorldsEnslaver";
+    private const string ConstrictorId = "MapWorldsConstrictor";
+    private const string PurifierId = "MapWorldsPurifier";
+    private const string EradicatorId = "MapWorldsEradicator";
+
+    public static Decayed Read(AtlasTree tree) => new(
+        ChimeraDefeated: IsCompleted(tree, ChimeraId),
+        HydraDefeated: IsCompleted(tree, HydraId),
+        MinotaurDefeated: IsCompleted(tree, MinotaurId),
+        PhoenixDefeated: IsCompleted(tree, PhoenixId),
+        EnslaverDefeated: IsCompleted(tree, EnslaverId),
+        ConstrictorDefeated: IsCompleted(tree, ConstrictorId),
+        PurifierDefeated: IsCompleted(tree, PurifierId),
+        EradicatorDefeated: IsCompleted(tree, EradicatorId));
+
+    private static bool? IsCompleted(AtlasTree tree, string areaId)
+    {
+        foreach (var node in tree.Nodes)
+            if (node.AreaId == areaId) return node.Completed;
+        return null;
+    }
 }

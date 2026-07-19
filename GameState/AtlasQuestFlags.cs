@@ -69,13 +69,6 @@ internal static class AtlasQuestFlags
                 public const string InfluenceUnlocked = "HaveCleansingFireMapDeviceAlteration";
                 public const string PolaricInvitationDropped = "HaveCleansingFireKey1";
                 public const string BlackStarDefeated = "CleansingMiniBossDefeated";
-                // TODO(migrate): no per-tier flags exist. Only
-                // CleansingFireDefeatMapBoss (single, "any tier").
-                // Migrate reader to CompletedNodes for per-tier.
-                public const string T12Cleared = "SearingExarchT12Complete";
-                public const string T13Cleared = "SearingExarchT13Complete";
-                public const string T14Cleared = "SearingExarchT14Complete";
-                public const string T15Cleared = "SearingExarchT15Complete";
                 public const string IncandescentInvitationDropped = "HaveCleansingFireKey2";
             }
 
@@ -86,12 +79,6 @@ internal static class AtlasQuestFlags
                 // PickUpTangleMapDeviceAlteration.
                 public const string FleshCompassReceived = "MetEnvoyEater";
                 public const string InfluenceUnlocked = "HaveTangleMapDeviceAlteration";
-                // TODO(migrate): same story as Exarch above - only
-                // TangleDefeatMapBoss (single). Use CompletedNodes.
-                public const string T9Cleared = "EaterOfWorldsT9Complete";
-                public const string T10Cleared = "EaterOfWorldsT10Complete";
-                public const string T12Cleared = "EaterOfWorldsT12Complete";
-                public const string T14Cleared = "EaterOfWorldsT14Complete";
                 // Semi-confident: Tangle Key1 fires earlier (Writhing /
                 // Infinite Hunger), Key2 later (Screaming). Reverse if
                 // real progression shows otherwise.
@@ -104,12 +91,6 @@ internal static class AtlasQuestFlags
         {
             public const string EagonMet = "MetEagon";
             public const string EagonIntroductionSeen = "EagonIntroductionSeen";
-            // TODO(migrate): no per-map flags. Only aggregate
-            // NonQuestMemoryBossesDefeated + FirstMemoryBossSeen etc.
-            // The three maps are atlas nodes - use CompletedNodes.
-            public const string CourtyardCleared = "CourtyardOfWastingComplete";
-            public const string ChambersCleared = "ChambersOfImpurityComplete";
-            public const string TheatreCleared = "TheatreOfLiesComplete";
             // Incarnations - two mid-tier, one final (Dread in Pinnacles).
             // Ignorance = Dread, Benevolence = Neglect, Fear = Fear.
             // Fear flag is a guess (no defeat flag in dump, only KeyHeld
@@ -118,19 +99,8 @@ internal static class AtlasQuestFlags
             public const string IncarnationOfFearDefeated = "FearBossNonQuestDefeated";
         }
 
-        // TODO(migrate): no Guardian defeat flags. All eight are
-        // atlas nodes (MapWorldsChimera etc.) - use CompletedNodes.
-        public static class Decayed
-        {
-            public const string ChimeraDefeated = "ChimeraDefeated";
-            public const string HydraDefeated = "HydraDefeated";
-            public const string MinotaurDefeated = "MinotaurDefeated";
-            public const string PhoenixDefeated = "PhoenixDefeated";
-            public const string EnslaverDefeated = "EnslaverDefeated";
-            public const string ConstrictorDefeated = "ConstrictorDefeated";
-            public const string PurifierDefeated = "PurifierDefeated";
-            public const string EradicatorDefeated = "EradicatorDefeated";
-        }
+        // Decayed: Guardian defeats live in AtlasMapNode.Completed;
+        // DecayedReader reads the tree directly.
     }
 
     // Every constant declared above must appear in this list.
@@ -149,25 +119,14 @@ internal static class AtlasQuestFlags
 
         Voidstones.Eldritch.Exarch.EnvoyMet, Voidstones.Eldritch.Exarch.InfluenceUnlocked,
         Voidstones.Eldritch.Exarch.PolaricInvitationDropped, Voidstones.Eldritch.Exarch.BlackStarDefeated,
-        Voidstones.Eldritch.Exarch.T12Cleared, Voidstones.Eldritch.Exarch.T13Cleared,
-        Voidstones.Eldritch.Exarch.T14Cleared, Voidstones.Eldritch.Exarch.T15Cleared,
         Voidstones.Eldritch.Exarch.IncandescentInvitationDropped,
         Voidstones.Eldritch.Eater.FleshCompassReceived, Voidstones.Eldritch.Eater.InfluenceUnlocked,
-        Voidstones.Eldritch.Eater.T9Cleared, Voidstones.Eldritch.Eater.T10Cleared,
-        Voidstones.Eldritch.Eater.T12Cleared, Voidstones.Eldritch.Eater.T14Cleared,
         Voidstones.Eldritch.Eater.ScreamingInvitationDropped,
         Voidstones.Eldritch.Eater.InfiniteHungerDefeated,
 
         Voidstones.Originator.EagonMet, Voidstones.Originator.EagonIntroductionSeen,
-        Voidstones.Originator.CourtyardCleared,
-        Voidstones.Originator.ChambersCleared, Voidstones.Originator.TheatreCleared,
         Voidstones.Originator.IncarnationOfNeglectDefeated,
         Voidstones.Originator.IncarnationOfFearDefeated,
-
-        Voidstones.Decayed.ChimeraDefeated, Voidstones.Decayed.HydraDefeated,
-        Voidstones.Decayed.MinotaurDefeated, Voidstones.Decayed.PhoenixDefeated,
-        Voidstones.Decayed.EnslaverDefeated, Voidstones.Decayed.ConstrictorDefeated,
-        Voidstones.Decayed.PurifierDefeated, Voidstones.Decayed.EradicatorDefeated,
     };
 
     public sealed record ValidationResult(int Total, IReadOnlyList<string> Unresolved);

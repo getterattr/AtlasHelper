@@ -9,28 +9,20 @@ public sealed record ExarchChain(
     bool? InfluenceUnlocked,
     bool? PolaricInvitationDropped,
     bool? BlackStarDefeated,
-    bool? T12Cleared,
-    bool? T13Cleared,
-    bool? T14Cleared,
-    bool? T15Cleared,
     bool? IncandescentInvitationDropped)
 {
     public static ExarchChain Empty { get; } =
-        new(null, null, null, null, null, null, null, null, null);
+        new(null, null, null, null, null);
 }
 
 public sealed record EaterChain(
     bool? FleshCompassReceived,
     bool? InfluenceUnlocked,
-    bool? T9Cleared,
-    bool? T10Cleared,
-    bool? T12Cleared,
-    bool? T14Cleared,
     bool? ScreamingInvitationDropped,
     bool? InfiniteHungerDefeated)
 {
     public static EaterChain Empty { get; } =
-        new(null, null, null, null, null, null, null, null);
+        new(null, null, null, null);
 }
 
 public sealed record Eldritch(ExarchChain Exarch, EaterChain Eater)
