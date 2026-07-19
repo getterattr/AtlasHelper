@@ -1,4 +1,5 @@
 using AtlasHelper.GameState;
+using AtlasHelper.GameState.Readers;
 using AtlasHelper.Ui;
 using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
@@ -7,7 +8,15 @@ namespace AtlasHelper;
 
 public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
+    private static readonly string[] FlagKeywords =
+    {
+        "Maven", "Beacon", "Exarch", "Eater", "Sirus", "Shaper", "Elder",
+        "Incarnation", "Dread", "Feared", "Formed", "Twisted", "Elderslayer",
+        "Forgotten", "Remembered", "Crucible", "Voidstone", "Writ",
+    };
+
     private readonly GameStateReader _state = new();
+    private bool _flagsDumped;
 
     public AtlasSnapshot State => _state.Current;
 
@@ -26,7 +35,20 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     public override Job Tick()
     {
         _state.RefreshIfStale(GameController);
+        DumpFlagCandidatesOnce();
         return null;
+    }
+
+    private void DumpFlagCandidatesOnce()
+    {
+        if (_flagsDumped || GameController?.IngameState?.Data?.ServerData?.QuestFlags == null)
+            return;
+
+        var flags = QuestFlagLookup.Build(GameController);
+        foreach (var kvp in flags.WhereNameContains(FlagKeywords))
+            LogMessage($"[AtlasHelper.QuestFlagCandidate] {kvp.Key}={kvp.Value}", 15f);
+
+        _flagsDumped = true;
     }
 
     public override void Render()

@@ -9,45 +9,57 @@ internal static class TreeReader
 {
     public static AtlasTree Read(GameController gc)
     {
-        var completed = gc.IngameState.Data.ServerData.CompletedNodes;
-        var bonusCompleted = gc.IngameState.Data.ServerData.BonusCompletedNodes;
-        if (completed == null)
+        var server = gc.IngameState.Data.ServerData;
+        var completed = server.CompletedNodes;
+        var bonusCompleted = server.BonusCompletedNodes;
+        if (completed == null || completed.Count == 0)
             return AtlasTree.Empty;
+
+        var completedIds = new HashSet<string>();
+        foreach (var node in completed)
+            if (node?.Area?.Id is { } id) completedIds.Add(id);
 
         var bonusIds = new HashSet<string>();
         if (bonusCompleted != null)
         {
             foreach (var node in bonusCompleted)
-                if (node.Area?.Id is { } id) bonusIds.Add(id);
+                if (node?.Area?.Id is { } id) bonusIds.Add(id);
         }
 
         var nodes = new Dictionary<string, AtlasMapNode>();
+        var queue = new Queue<AtlasNode>();
         foreach (var node in completed)
-            AddNode(node, nodes, bonusIds);
+            queue.Enqueue(node);
 
-        return new AtlasTree(nodes);
-    }
-
-    private static void AddNode(AtlasNode node, Dictionary<string, AtlasMapNode> sink, HashSet<string> bonusIds)
-    {
-        if (node?.Area?.Id is not { } areaId || sink.ContainsKey(areaId))
-            return;
-
-        var connectionIds = new List<string>();
-        if (node.Connections != null)
+        while (queue.Count > 0)
         {
-            foreach (var neighbour in node.Connections)
-                if (neighbour?.Area?.Id is { } neighbourId)
+            var current = queue.Dequeue();
+            if (current?.Area?.Id is not { } areaId || nodes.ContainsKey(areaId))
+                continue;
+
+            var connectionIds = new List<string>();
+            if (current.Connections != null)
+            {
+                foreach (var neighbour in current.Connections)
+                {
+                    if (neighbour?.Area?.Id is not { } neighbourId) continue;
                     connectionIds.Add(neighbourId);
+                    if (!nodes.ContainsKey(neighbourId))
+                        queue.Enqueue(neighbour);
+                }
+            }
+
+            nodes[areaId] = new AtlasMapNode(
+                areaId,
+                current.Area.Name ?? string.Empty,
+                current.BaseTier,
+                new Vector2(current.PosX, current.PosY),
+                current.IsUniqueMap,
+                connectionIds,
+                completedIds.Contains(areaId),
+                bonusIds.Contains(areaId));
         }
 
-        sink[areaId] = new AtlasMapNode(
-            areaId,
-            node.Area.Name ?? string.Empty,
-            node.BaseTier,
-            new Vector2(node.PosX, node.PosY),
-            node.IsUniqueMap,
-            connectionIds,
-            bonusIds.Contains(areaId));
+        return new AtlasTree(nodes);
     }
 }

@@ -9,6 +9,8 @@ public sealed record AtlasSnapshot(
     MavenState Maven,
     AtlasPassives Passives,
     AtlasTree Tree,
+    AtlasBeacons Beacons,
+    AtlasInvitationProgress InvitationProgress,
     PinnacleCompletion Pinnacles)
 {
     public static AtlasSnapshot Empty { get; } = new(
@@ -18,5 +20,7 @@ public sealed record AtlasSnapshot(
         MavenState.Empty,
         AtlasPassives.Empty,
         AtlasTree.Empty,
+        AtlasBeacons.Empty,
+        AtlasInvitationProgress.Empty,
         PinnacleCompletion.Empty);
 }

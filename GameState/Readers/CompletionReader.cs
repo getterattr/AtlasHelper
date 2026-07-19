@@ -13,13 +13,13 @@ internal static class CompletionReader
         if (bonusNodes == null || completedNodes == null)
             return AtlasCompletion.Empty;
 
-        int normal = 0, unique = 0;
+        int normalBonus = 0, uniqueBonus = 0;
         foreach (var node in bonusNodes)
         {
-            if (node.IsUniqueMap) unique++;
-            else normal++;
+            if (node.IsUniqueMap) uniqueBonus++;
+            else normalBonus++;
         }
 
-        return new AtlasCompletion(normal, unique, completedNodes.Count);
+        return new AtlasCompletion(normalBonus, uniqueBonus, completedNodes.Count);
     }
 }

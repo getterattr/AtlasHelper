@@ -10,6 +10,7 @@ public sealed record AtlasMapNode(
     Vector2 Position,
     bool IsUnique,
     IReadOnlyList<string> ConnectedAreaIds,
+    bool Completed,
     bool BonusCompleted);
 
 public sealed record AtlasTree(IReadOnlyDictionary<string, AtlasMapNode> NodesByAreaId)

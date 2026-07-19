@@ -24,6 +24,8 @@ public sealed class GameStateReader
         if (!gc.InGame || gc.Player == null)
             return _current;
 
+        var flags = QuestFlagLookup.Build(gc);
+
         _current = new AtlasSnapshot(
             DateTime.UtcNow,
             VoidstoneReader.Read(gc),
@@ -31,7 +33,9 @@ public sealed class GameStateReader
             MavenReader.Read(gc),
             PassivesReader.Read(gc),
             TreeReader.Read(gc),
-            PinnacleCompletion.Empty);
+            BeaconReader.Read(flags),
+            InvitationProgressReader.Read(gc, flags),
+            PinnacleCompletionReader.Read(flags));
 
         return _current;
     }
