@@ -1,17 +1,29 @@
+using System;
 using System.Collections.Generic;
 using AtlasHelper.GameState.Atlas;
 
 namespace AtlasHelper.Services;
 
-// Pathfinding across the atlas graph. Consumers use this to identify
-// the shortest sequence of connected maps between two positions - e.g.
-// path from a T11 objective node (Polaric Void for the Exarch chain,
-// Seething Chime for the Eater chain) back to the nearest already-
-// unlocked T1 to determine the play order for Phase 1.
+// Pathfinding across the atlas graph. Consumers pass a predicate that
+// identifies the destination node; the search returns the shortest hop
+// sequence from `startAreaId` to the first matching node.
 //
-// Currently exposes one predicate (nearest T1). More predicates land
-// as workstream 3 arrives - nearest unfinished, nearest with rarity
-// satisfied, path to arbitrary target, etc.
+// The predicate shape lets one algorithm serve every atlas pathing
+// question the roadmap turns up:
+//
+//   nearest T1 for Phase 1 unlock planning:
+//       n => n.BaseTier == 1
+//
+//   specific target for a chain step (Polaric Void, Seething Chime):
+//       n => n.AreaId == "MapWorldsPolaricVoid"
+//
+//   nearest unfinished T1 during Phase 3 tier-boost sweep:
+//       n => n.BaseTier == 1 && !n.BonusCompleted
+//
+//   nearest bonus-eligible unique map:
+//       n => n.IsUnique && !n.Completed
+//
+// The algorithm itself never changes - only what "destination" means.
 
 public sealed record AtlasPath(IReadOnlyList<AtlasMapNode> Nodes)
 {
@@ -27,11 +39,17 @@ public sealed record AtlasPath(IReadOnlyList<AtlasMapNode> Nodes)
 
 public static class Pathfinding
 {
-    // BFS from `startAreaId` to the nearest node with BaseTier == 1.
-    // Returns the path in start-to-destination order: [start, ..., T1].
-    // Consumers that want play order (T1 first, then walking up to the
-    // target) reverse the returned list.
-    public static AtlasPath FindPathToNearestTierOne(AtlasTree tree, string startAreaId)
+    // BFS from `startAreaId` to the first node matching `isDestination`.
+    // Returns the path in start-to-destination order: [start, ..., dest].
+    // Consumers that want play order (destination first, then walking
+    // back toward the start position) reverse the returned list.
+    //
+    // If `startAreaId` is not in the tree, or no node satisfies the
+    // predicate, returns AtlasPath.Empty.
+    public static AtlasPath FindPath(
+        AtlasTree tree,
+        string startAreaId,
+        Func<AtlasMapNode, bool> isDestination)
     {
         var byId = new Dictionary<string, AtlasMapNode>(tree.Nodes.Count);
         foreach (var node in tree.Nodes)
@@ -51,7 +69,7 @@ public static class Pathfinding
         {
             var current = queue.Dequeue();
 
-            if (current.BaseTier == 1)
+            if (isDestination(current))
             {
                 destination = current;
                 break;
