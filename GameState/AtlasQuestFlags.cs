@@ -31,25 +31,23 @@ internal static class AtlasQuestFlags
     {
         public static class AtlasLadder
         {
-            // TODO(unresolved): most likely MetEnvoyMaven; also
-            // HaveMavenMapDeviceAlteration, HaveSkillBookMaven.
+            // TODO(unresolved): MetEnvoyMaven, HaveMavenMapDeviceAlteration.
             public const string BeaconAcquired = "GotMavensBeacon";
 
-            // TODO(unresolved): no MavensCrucibleStageN flags in dump.
-            // Candidates: MavenFirstInvitation (TRUE on test char -
-            // possibly Stage 1), MavenFirstMapBossCapture,
-            // HaveMavenMapAtlas{1..5} (item-not-completion).
-            public const string Stage1 = "MavensCrucibleStage1Complete";
+            // Semi-confident: MavenFirstInvitation matches Stage 1
+            // ("first invitation seen/accepted"). Stage 2-5 have no
+            // clear candidates in the dump. Also worth checking:
+            // Entered{First,Second,Third}PinnacleBossArea.
+            public const string Stage1 = "MavenFirstInvitation";
             public const string Stage2 = "MavensCrucibleStage2Complete";
             public const string Stage3 = "MavensCrucibleStage3Complete";
             public const string Stage4 = "MavensCrucibleStage4Complete";
             public const string Stage5 = "MavensCrucibleStage5Complete";
         }
 
-        // TODO(unresolved): no MavensInvitationThe{X}Complete flags in
-        // dump. Candidates: HaveMavenMapAtlas{1..5}, individual
-        // MavenFirst/Second/... boss-capture flags. Kirac dialog flags
-        // exist but only mark exposure, not completion.
+        // TODO(unresolved): the six HaveMavenMapVoid1-6 flags line up
+        // with six themed invitations. Ordering unknown - map after
+        // completing each theme in a test session.
         public static class ThemedInvitations
         {
             public const string Formed = "MavensInvitationTheFormedComplete";
@@ -71,8 +69,9 @@ internal static class AtlasQuestFlags
                 public const string InfluenceUnlocked = "HaveCleansingFireMapDeviceAlteration";
                 public const string PolaricInvitationDropped = "HaveCleansingFireKey1";
                 public const string BlackStarDefeated = "CleansingMiniBossDefeated";
-                // TODO(unresolved): no per-tier flags in dump; likely
-                // tracked via CompletedNodes instead.
+                // TODO(migrate): no per-tier flags exist. Only
+                // CleansingFireDefeatMapBoss (single, "any tier").
+                // Migrate reader to CompletedNodes for per-tier.
                 public const string T12Cleared = "SearingExarchT12Complete";
                 public const string T13Cleared = "SearingExarchT13Complete";
                 public const string T14Cleared = "SearingExarchT14Complete";
@@ -87,7 +86,8 @@ internal static class AtlasQuestFlags
                 // PickUpTangleMapDeviceAlteration.
                 public const string FleshCompassReceived = "MetEnvoyEater";
                 public const string InfluenceUnlocked = "HaveTangleMapDeviceAlteration";
-                // TODO(unresolved): no per-tier flags in dump.
+                // TODO(migrate): same story as Exarch above - only
+                // TangleDefeatMapBoss (single). Use CompletedNodes.
                 public const string T9Cleared = "EaterOfWorldsT9Complete";
                 public const string T10Cleared = "EaterOfWorldsT10Complete";
                 public const string T12Cleared = "EaterOfWorldsT12Complete";
@@ -104,9 +104,9 @@ internal static class AtlasQuestFlags
         {
             public const string EagonMet = "MetEagon";
             public const string EagonIntroductionSeen = "EagonIntroductionSeen";
-            // TODO(unresolved): no per-map flags. Memory maps are
-            // atlas nodes (MapWorldsCourtyardOfWasting etc.) - migrate
-            // reader to AtlasMapNode.Completed instead of chasing flags.
+            // TODO(migrate): no per-map flags. Only aggregate
+            // NonQuestMemoryBossesDefeated + FirstMemoryBossSeen etc.
+            // The three maps are atlas nodes - use CompletedNodes.
             public const string CourtyardCleared = "CourtyardOfWastingComplete";
             public const string ChambersCleared = "ChambersOfImpurityComplete";
             public const string TheatreCleared = "TheatreOfLiesComplete";
@@ -118,9 +118,8 @@ internal static class AtlasQuestFlags
             public const string IncarnationOfFearDefeated = "FearBossNonQuestDefeated";
         }
 
-        // TODO(unresolved): no Guardian defeat flags in dump. All eight
-        // are atlas nodes (MapWorldsChimera etc.); migrate reader to
-        // AtlasMapNode.Completed.
+        // TODO(migrate): no Guardian defeat flags. All eight are
+        // atlas nodes (MapWorldsChimera etc.) - use CompletedNodes.
         public static class Decayed
         {
             public const string ChimeraDefeated = "ChimeraDefeated";
