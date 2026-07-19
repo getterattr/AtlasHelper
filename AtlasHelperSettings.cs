@@ -12,7 +12,7 @@ public class AtlasHelperSettings : ISettings
     [Menu("Enabled", "Enable or disable the AtlasHelper plugin.")]
     public ToggleNode Enable { get; set; } = new(false);
 
-    [Menu("Overview", "Strategy summary and a snapshot of your current configuration.")]
+    [Menu("Overview", "Snapshot of your current configuration.")]
     [JsonIgnore]
     public CustomNode Overview { get; set; } = new();
 
@@ -33,16 +33,16 @@ public class ProgressionSettings
         Value = "Auto",
     };
 
-    [Menu(
-        "Strategy",
-        "How you plan to acquire the 3rd and 4th voidstones.\n\n" +
-        "Destructive Play (default): you kill the Shaper, Elder, and Maven yourself. Recommendations from Phase 3 onward favour bossing prep - farming their invitations and running the fights.\n\n" +
-        "Exarch Altars: you don't want to fight the pinnacle bosses. Recommendations favour currency farming (Exarch altars) so you can buy a carry for the last two voidstones instead.")]
+    [Menu("Strategy", "How you plan to acquire the 3rd and 4th voidstones.")]
     public ListNode Strategy { get; set; } = new()
     {
         Values = new List<string> { "Destructive Play", "Exarch Altars" },
         Value = "Destructive Play",
     };
+
+    [Menu("Reference", "Phase and strategy definitions.")]
+    [JsonIgnore]
+    public CustomNode Reference { get; set; } = new();
 }
 
 [Submenu(CollapsedByDefault = true)]
