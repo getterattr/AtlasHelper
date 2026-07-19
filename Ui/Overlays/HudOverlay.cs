@@ -1,6 +1,7 @@
 using AtlasHelper.GameState;
 using AtlasHelper.GameState.Atlas;
 using AtlasHelper.GameState.Maven;
+using AtlasHelper.Services;
 using ImGuiNET;
 using System.Numerics;
 
@@ -41,7 +42,7 @@ internal static class HudOverlay
 
     private static void DrawBody(AtlasHelperSettings settings, AtlasSnapshot state)
     {
-        ImGui.Text($"Phase:       {settings.Progression.PhaseOverride.Value}");
+        ImGui.Text($"Phase:       {FormatPhaseLine(settings, state)}");
         ImGui.Separator();
 
         ImGui.Text($"Voidstones:  {state.Voidstones.SocketedCount} / 4");
@@ -49,6 +50,23 @@ internal static class HudOverlay
         ImGui.Text($"Unique maps: {state.Completion.UniqueBonusCount} / {AtlasCompletion.UniqueBonusTarget}");
         ImGui.Text($"Maven:       {FormatMavenLine(state.AtlasInvitation)}");
     }
+
+    private static string FormatPhaseLine(AtlasHelperSettings settings, AtlasSnapshot state)
+    {
+        var selection = settings.Progression.PhaseOverride.Value;
+        if (selection != "Auto") return selection;
+
+        return $"Auto ({FormatPhaseId(Phase.From(state).Id)})";
+    }
+
+    private static string FormatPhaseId(PhaseId id) => id switch
+    {
+        PhaseId.One => "Phase 1",
+        PhaseId.Two => "Phase 2",
+        PhaseId.Three => "Phase 3",
+        PhaseId.Four => "Phase 4",
+        _ => id.ToString(),
+    };
 
     private static string FormatMavenLine(AtlasInvitation invitation)
     {
