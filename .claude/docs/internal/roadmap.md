@@ -7,7 +7,7 @@ Current-state view of what's built, what's left, and the order that respects dep
 - **Domain model.** Glossary, questline facts, strategy rules, phase definitions. See [glossary](glossary.md), [questline](questline.md), [strategy](strategy.md).
 - **State model.** `AtlasSnapshot` immutable record, modules (`Atlas/`, `Voidstones/`, `Maven/`, `Pinnacles/`, `Diagnostics/`), single-fact ownership, per-section readers, Files-first pattern. See [decisions/gamestate.md](decisions/gamestate.md) and [decisions/read-pattern.md](decisions/read-pattern.md).
 - **Diagnostics.** `AtlasQuestFlags` catalog + validator, `FlagDiagnostics` (startup dump), `SnapshotHealth` (post-patch offset breakage). Debug logging toggle in settings.
-- **UI surfaces (rudimentary).** HUD showing raw counters (voidstones, bonus, Maven stage). Atlas overlay circling uncompleted nodes. Overview and settings panels.
+- **UI surfaces (rudimentary).** Split under `Ui/Overlays/` (in-game surfaces: HUD showing raw counters, atlas overlay circling uncompleted nodes) and `Ui/Panels/` (settings-panel content: overview, progression reference).
 - **Plugin lifecycle scaffold.** `AtlasHelperRuntime` facade owns state + diagnostics; `Core.Initialize`/`Shutdown` bookend session lifetime.
 
 ## Open workstreams
@@ -36,9 +36,11 @@ Small, self-contained additions. Runs sit under `GameState/Readers/`, records un
 - **In-map advice.** Per-map "bother yes/no" derivation from current-map identity + drop state ([strategy.md#in-map-loop](strategy.md#in-map-loop)).
 
 ### 4. Surfaces (consumes 3)
-- **HUD redesign.** Lead with the Advisory line, chains second, counters last. In-town vs in-map variants.
-- **Atlas overlay phase-awareness.** Ring color by tier band, solid for phase-relevant nodes, chain-gating accent, Eagon-eligible white markers during Phase 2.
-- **Boss-path arrow.** Uses ExileApi `Areas` plus the `Repositories/Stranded/Pathfinder/` pattern. Independent track - can slot in any time after readers.
+UI lives under `Ui/`, split by audience: `Ui/Overlays/` for in-game surfaces the player sees while playing, `Ui/Panels/` for settings-panel content in the ExileApi menu. `Theme.cs` and `ImGuiHelpers.cs` sit at the `Ui/` root as shared utilities.
+
+- **HUD redesign** (`Ui/Overlays/HudOverlay`). Lead with the Advisory line, chains second, counters last. In-town vs in-map variants.
+- **Atlas overlay phase-awareness** (`Ui/Overlays/AtlasOverlay`). Ring color by tier band, solid for phase-relevant nodes, chain-gating accent, Eagon-eligible white markers during Phase 2.
+- **Boss-path arrow** (`Ui/Overlays/BossPathArrow`, new). Uses ExileApi `Areas` plus the `Repositories/Stranded/Pathfinder/` pattern. Independent track - can slot in any time after readers.
 
 ### 5. Release
 - Publishing pipeline via the `publish` skill.

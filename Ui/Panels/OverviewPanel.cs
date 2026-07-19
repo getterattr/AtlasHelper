@@ -1,7 +1,7 @@
 using System.Numerics;
 using ImGuiNET;
 
-namespace AtlasHelper.Ui;
+namespace AtlasHelper.Ui.Panels;
 
 internal static class OverviewPanel
 {

@@ -52,4 +52,10 @@ Runtime state is split into modules under `GameState/`:
 - `Pinnacles/` - individual boss kills.
 - `Diagnostics/` - startup flag dump + snapshot health check for detecting broken readers after patch offset shifts.
 
+UI surfaces live under `Ui/`, split by audience:
+
+- `Ui/Overlays/` - in-game surfaces rendered while the player is playing (`HudOverlay`, `AtlasOverlay`, future `BossPathArrow`).
+- `Ui/Panels/` - settings-panel content rendered in the ExileApi menu (`OverviewPanel`, `ProgressionReferencePanel`).
+- `Ui/Theme.cs`, `Ui/ImGuiHelpers.cs` - shared styling and drawing utilities.
+
 Plugins are compiled by `Loader.exe` on HUD startup; do not run `dotnet build`. To pin canonical `QuestFlag` names, trigger a milestone in-game and diff `QuestFlagDump.tsv` (written once per session by `FlagDiagnostics`).

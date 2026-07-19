@@ -1,6 +1,6 @@
 using ImGuiNET;
 
-namespace AtlasHelper.Ui;
+namespace AtlasHelper.Ui.Panels;
 
 internal static class ProgressionReferencePanel
 {

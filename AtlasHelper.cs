@@ -1,7 +1,8 @@
 using System;
 using AtlasHelper.GameState;
 using AtlasHelper.GameState.Diagnostics;
-using AtlasHelper.Ui;
+using AtlasHelper.Ui.Overlays;
+using AtlasHelper.Ui.Panels;
 using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
 

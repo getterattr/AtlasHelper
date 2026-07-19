@@ -4,7 +4,7 @@ using AtlasHelper.GameState.Maven;
 using ImGuiNET;
 using System.Numerics;
 
-namespace AtlasHelper.Ui;
+namespace AtlasHelper.Ui.Overlays;
 
 internal static class HudOverlay
 {

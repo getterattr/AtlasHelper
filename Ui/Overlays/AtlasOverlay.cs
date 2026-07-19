@@ -4,7 +4,7 @@ using AtlasHelper.GameState.Atlas;
 using ExileCore.PoEMemory.Elements;
 using Graphics = ExileCore.Graphics;
 
-namespace AtlasHelper.Ui;
+namespace AtlasHelper.Ui.Overlays;
 
 internal static class AtlasOverlay
 {
