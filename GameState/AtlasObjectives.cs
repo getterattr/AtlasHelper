@@ -29,13 +29,18 @@ internal sealed record AtlasObjectives(
     string? EldritchWaypointA,
     string? EldritchWaypointB)
 {
-    // Phase-1 default T11 waypoints for the Eldritch chain. Any T11 in
-    // the bottom-left quadrant works strategically (see
-    // strategy.md#phase-1); these two are chosen because they are the
-    // only T11 atlas maps in the bottom-left quadrant per the 3.29
-    // atlas layout. Change if GGG reshuffles.
-    private const string WaypointNameA = "Siege";
-    private const string WaypointNameB = "Haunted Mansion";
+    // Phase-1 Eldritch chain waypoints. These are the atlas icons for
+    // The Black Star and The Infinite Hunger arenas - the mid-tier
+    // Eldritch pinnacle fights entered via Polaric Invitation (Black
+    // Star / Polaric Void) and Writhing Invitation (Infinite Hunger /
+    // Seething Chyme). Both live in the Eldritch (bottom-left)
+    // quadrant. Wiki-verified 3.29.
+    //
+    // The arenas themselves (MapWorldsPrimordialBoss1/2, area level 83)
+    // are off-atlas via `map_not_on_atlas`, but their entry icons are
+    // pathable atlas nodes.
+    private const string BlackStarAtlasId = "BlackStarBoss";
+    private const string InfiniteHungerAtlasId = "InfiniteHungerBoss";
 
     // Corner-slot id-suffix signal. Legacy Watchstone naming from
     // Conquerors of the Atlas; GGG never renamed on the voidstone
@@ -52,8 +57,8 @@ internal sealed record AtlasObjectives(
         yield return ("Originator corner", OriginatorCornerId);
         yield return ("Decayed corner", DecayedCornerId);
         yield return ("Ceremonial corner", CeremonialCornerId);
-        yield return ($"Eldritch waypoint '{WaypointNameA}'", EldritchWaypointA);
-        yield return ($"Eldritch waypoint '{WaypointNameB}'", EldritchWaypointB);
+        yield return ($"Black Star icon '{BlackStarAtlasId}'", EldritchWaypointA);
+        yield return ($"Infinite Hunger icon '{InfiniteHungerAtlasId}'", EldritchWaypointB);
     }
 
     public static AtlasObjectives Resolve(GameController gc)
@@ -105,13 +110,13 @@ internal sealed record AtlasObjectives(
                 continue;
             }
 
-            // Waypoint resolution by display name. Use Area.Id as the
-            // routing identifier because AtlasMapNode.AreaId is
-            // sourced from Area.Id for regular maps.
-            if (areaName == WaypointNameA)
-                waypointA = entry.Area!.Id;
-            else if (areaName == WaypointNameB)
-                waypointB = entry.Area!.Id;
+            // Boss-arena entry icons on the atlas have no Area (like
+            // corner slots); resolve by exact entry.Id. Wiki-verified
+            // stable ids as of 3.29. If GGG renames, fall back to
+            // position-quadrant + no-area filter (not implemented
+            // until we see it break in practice).
+            if (id == BlackStarAtlasId) waypointA = id;
+            else if (id == InfiniteHungerAtlasId) waypointB = id;
         }
 
         return new AtlasObjectives(
