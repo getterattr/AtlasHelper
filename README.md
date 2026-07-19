@@ -2,15 +2,13 @@
 
 An ExileApi overlay plugin for Path of Exile. Guides league-start atlas progression from empty atlas to four voidstones: tracks the current phase, highlights which map to run next, and points at the boss room while you're in a map.
 
-> Status: design locked, implementation not yet started. See `.claude/docs/internal/context.md` for scope and the blocking spike.
-
 ## Install
 
 ### Requirements
 
-- Path of Exile should be running in Windowed or Windowed Fullscreen mode
-- [ExileApi](https://github.com/exApiTools/ExileApi-Compiled)
-- .NET 10 SDK
+- Path of Exile should be running in Windowed or Windowed Fullscreen mode.
+- [ExileApi](https://github.com/exApiTools/ExileApi-Compiled).
+- .NET 10 SDK.
 
 ### Install With PluginUpdater
 
@@ -31,4 +29,4 @@ An ExileApi overlay plugin for Path of Exile. Guides league-start atlas progress
 
 ## Setup
 
-Setup instructions will be added once the plugin is functional.
+> TODO

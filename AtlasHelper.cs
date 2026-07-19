@@ -1,7 +1,7 @@
-﻿using ExileCore;
+using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
-using Vector2 = System.Numerics.Vector2;
-using Color = SharpDX.Color;
+using ImGuiNET;
+using System.Numerics;
 
 namespace AtlasHelper;
 
@@ -9,52 +9,61 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
     public override bool Initialise()
     {
-        //Perform one-time initialization here
-
-        //Maybe load you custom config (only do so if builtin settings are inadequate for the job)
-        //var configPath = Path.Join(ConfigDirectory, "custom_config.txt");
-        //if (File.Exists(configPath))
-        //{
-        //    var data = File.ReadAllText(configPath);
-        //}
-
         return true;
     }
 
     public override void AreaChange(AreaInstance area)
     {
-        //Perform once-per-zone processing here
-        //For example, Radar builds the zone map texture here
     }
 
     public override Job Tick()
     {
-        //Perform non-render-related work here, e.g. position calculation.
-        //This method is still called on every frame, so to really gain
-        //an advantage over just throwing everything in the Render method
-        //you have to return a custom job, but this is a bit of an advanced technique
-        //here's how, just in case:
-        //return new Job($"{nameof(AtlasHelper)}MainJob", () =>
-        //{
-        //    var a = Math.Sqrt(7);
-        //});
-
-        //otherwise, just run your code here
-        //var a = Math.Sqrt(7);
         return null;
     }
 
     public override void Render()
     {
-        //Any Imgui or Graphics calls go here. This is called after Tick
-        Graphics.DrawText($"Plugin {GetType().Name} is working.", new Vector2(100, 100), Color.Red);
+        if (!Settings.ShowHud.Value)
+            return;
+
+        DrawHudPanel();
     }
 
     public override void EntityAdded(Entity entity)
     {
-        //If you have a reason to process every entity only once,
-        //this is a good place to do so.
-        //You may want to use a queue and run the actual
-        //processing (if any) inside the Tick method.
+    }
+
+    private void DrawHudPanel()
+    {
+        ImGui.SetNextWindowPos(new Vector2(20, 120), ImGuiCond.FirstUseEver);
+        ImGui.SetNextWindowSize(new Vector2(260, 0), ImGuiCond.FirstUseEver);
+
+        const ImGuiWindowFlags flags =
+            ImGuiWindowFlags.NoCollapse |
+            ImGuiWindowFlags.AlwaysAutoResize;
+
+        if (!ImGui.Begin("AtlasHelper##AtlasHelperHud", flags))
+        {
+            ImGui.End();
+            return;
+        }
+
+        var phase = Settings.PhaseOverride.Value;
+        ImGui.Text($"Phase:       {phase}");
+        ImGui.Text($"Branch:      {Settings.Branch.Value}");
+        ImGui.Separator();
+
+        ImGui.Text("Voidstones:  0 / 4");
+        ImGui.Text("Completion:  0 / 117");
+        ImGui.Text("Maven:       0 / 10");
+        ImGui.Separator();
+
+        ImGui.Text("Exarch chain:  pending");
+        ImGui.Text("Eater chain:   pending");
+        ImGui.Separator();
+
+        ImGui.TextDisabled("(values are placeholders until the spike lands)");
+
+        ImGui.End();
     }
 }

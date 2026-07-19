@@ -1,15 +1,24 @@
-﻿using ExileCore.Shared.Interfaces;
+using ExileCore.Shared.Interfaces;
 using ExileCore.Shared.Nodes;
+using System.Collections.Generic;
 
 namespace AtlasHelper;
 
 public class AtlasHelperSettings : ISettings
 {
-    //Mandatory setting to allow enabling/disabling your plugin
     public ToggleNode Enable { get; set; } = new ToggleNode(false);
 
-    //Put all your settings here if you can.
-    //There's a bunch of ready-made setting nodes,
-    //nested menu support and even custom callbacks are supported.
-    //If you want to override DrawSettings instead, you better have a very good reason.
+    public ToggleNode ShowHud { get; set; } = new ToggleNode(true);
+
+    public ListNode PhaseOverride { get; set; } = new ListNode
+    {
+        Values = new List<string> { "Auto", "Phase 1", "Phase 2", "Phase 3", "Phase 4" },
+        Value = "Auto",
+    };
+
+    public ListNode Branch { get; set; } = new ListNode
+    {
+        Values = new List<string> { "Exarch Altars", "Destructive Play" },
+        Value = "Exarch Altars",
+    };
 }
