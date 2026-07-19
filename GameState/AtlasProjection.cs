@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Numerics;
 using ExileCore.PoEMemory.Elements;
 using RectangleF = SharpDX.RectangleF;
@@ -6,106 +5,49 @@ using Vector2 = System.Numerics.Vector2;
 
 namespace AtlasHelper.GameState;
 
-/// Projects atlas map-tree nodes from world coordinates to screen coordinates
-/// so an overlay can highlight arbitrary nodes without walking the panel's
-/// Element tree every frame.
+/// Projects an atlas node's world coordinates (AtlasNode.PosX/PosY, kept in
+/// AtlasMapNode.Position) to on-screen pixels, tracking the atlas panel's pan
+/// and zoom.
 ///
-/// The panel exposes:
-///   - Atlas.Children[0]           the canvas container
-///   - Atlas.Children[0].X, Y      screen origin (accounts for pan)
-///   - Atlas.Children[0].Scale     live zoom factor
-///   - Atlas.Children[0].Children  ~175 per-node Elements at canvas-local coords
+/// The atlas world coord system is anchored at (0, 0) and spans `WorldSpan`
+/// units per axis. The panel's inner canvas is Atlas.Children[0]; its
+/// GetClientRect() gives the on-screen top-left plus current-zoom width, so a
+/// single ratio (screenWidth / WorldSpan) converts world units to pixels.
 ///
-/// On first-open we solve a linear fit  local = k * world + offset  from the
-/// visible Element positions and the catalog's AtlasNode.PosX/PosY. Per-frame
-/// draw reads only the three canvas fields plus the cached local coords.
-public sealed class AtlasProjection
+/// Used for the "off-viewport" projection cases (e.g. drawing a target-Corner
+/// arrow when the destination node isn't currently rendered). Visible-node
+/// highlighting bypasses this by walking Atlas.Children[0].Children directly
+/// and calling GetClientRect() per Element.
+public static class AtlasProjection
 {
-    private const float NodeIconSize = 53f;
-    private const int MinCorrespondences = 6;
+    public const float WorldSpan = 1000f;
 
-    private float _k;
-    private Vector2 _offset;
-    private readonly Dictionary<string, Vector2> _localByAreaId = new();
-    private bool _calibrated;
-
-    public bool IsCalibrated => _calibrated;
-
-    /// Solves K, Cx, Cy from the catalog spans and the canvas texture dimensions.
-    /// The atlas canvas is designed so its full texture (canvas.Width × canvas.Height)
-    /// encompasses the entire atlas world, so K = canvas.Width / worldSpan.
-    /// Idempotent: safe to call every frame; only fits on the first successful pass.
-    public void CalibrateIfNeeded(AtlasPanel? atlas, AtlasTree catalog)
+    public static bool TryProject(AtlasPanel? atlas, Vector2 worldPos, out Vector2 screen)
     {
-        if (_calibrated || atlas == null || !atlas.IsVisible) return;
+        screen = default;
+        if (atlas == null || !atlas.IsVisible) return false;
 
         var canvas = atlas.GetChildAtIndex(0);
-        if (canvas == null || canvas.Width <= 0f || canvas.Height <= 0f) return;
-        if (catalog.NodesByAreaId.Count < MinCorrespondences) return;
+        if (canvas == null) return false;
 
-        var worldMin = new Vector2(float.MaxValue, float.MaxValue);
-        var worldMax = new Vector2(float.MinValue, float.MinValue);
-        foreach (var node in catalog.NodesByAreaId.Values)
-        {
-            if (node.Position.X < worldMin.X) worldMin.X = node.Position.X;
-            if (node.Position.Y < worldMin.Y) worldMin.Y = node.Position.Y;
-            if (node.Position.X > worldMax.X) worldMax.X = node.Position.X;
-            if (node.Position.Y > worldMax.Y) worldMax.Y = node.Position.Y;
-        }
-
-        var worldSpanX = worldMax.X - worldMin.X;
-        var worldSpanY = worldMax.Y - worldMin.Y;
-        if (worldSpanX <= 0f || worldSpanY <= 0f) return;
-
-        // Both axes share the same K because the atlas is drawn without axis-independent scaling.
-        // Use whichever axis exercises more of the canvas as the more reliable estimator.
-        var kx = canvas.Width / worldSpanX;
-        var ky = canvas.Height / worldSpanY;
-        _k = kx < ky ? kx : ky;
-
-        // Anchor world (min) at canvas-local (0, 0), matching the origin marker
-        // observed at Atlas.Children[0].Children[0] which sits at local (0, 0).
-        _offset = new Vector2(-worldMin.X * _k, -worldMin.Y * _k);
-
-        _localByAreaId.Clear();
-        foreach (var (areaId, node) in catalog.NodesByAreaId)
-            _localByAreaId[areaId] = node.Position * _k + _offset;
-
-        _calibrated = true;
-    }
-
-    /// Projects a catalog node onto the atlas canvas at its current pan/zoom.
-    /// Returns false when the panel is closed or the projection has not been calibrated.
-    public bool TryGetScreenRect(AtlasPanel? atlas, string areaId, out RectangleF rect)
-    {
-        rect = default;
-        if (!_calibrated || atlas == null || !atlas.IsVisible) return false;
-        if (!_localByAreaId.TryGetValue(areaId, out var local)) return false;
-
-        var canvas = atlas.GetChildAtIndex(0);
-        if (canvas == null || canvas.Width <= 0f) return false;
-
-        // canvas.GetClientRect() returns the on-screen rect after the panel's
-        // pan and zoom transforms are applied. Its width divided by canvas.Width
-        // (the untransformed texture dimension) gives the effective zoom factor
-        // for converting canvas-local coordinates into on-screen pixels.
         var canvasRect = canvas.GetClientRect();
-        var visualScale = canvasRect.Width / canvas.Width;
+        if (canvasRect.Width <= 0f) return false;
 
-        // element.X/Y in memory is the top-left of the node icon in canvas space,
-        // matching how ExileApi exposes raw child rects. Apply visualScale and
-        // translate by the canvas's on-screen top-left.
-        var screenX = canvasRect.X + local.X * visualScale;
-        var screenY = canvasRect.Y + local.Y * visualScale;
-        var iconOnScreen = NodeIconSize * visualScale;
-        rect = new RectangleF(screenX, screenY, iconOnScreen, iconOnScreen);
+        var scale = canvasRect.Width / WorldSpan;
+        screen = new Vector2(canvasRect.X, canvasRect.Y) + worldPos * scale;
         return true;
     }
 
-    public void Invalidate()
+    public static bool TryGetIconRect(AtlasPanel? atlas, Vector2 worldPos, float iconWorldSize, out RectangleF rect)
     {
-        _calibrated = false;
-        _localByAreaId.Clear();
+        rect = default;
+        if (!TryProject(atlas, worldPos, out var center)) return false;
+
+        var canvas = atlas!.GetChildAtIndex(0);
+        var canvasRect = canvas!.GetClientRect();
+        var scale = canvasRect.Width / WorldSpan;
+        var half = iconWorldSize * scale * 0.5f;
+        rect = new RectangleF(center.X - half, center.Y - half, iconWorldSize * scale, iconWorldSize * scale);
+        return true;
     }
 }
-
