@@ -46,7 +46,7 @@ The HUD is not suppressed outside town/atlas. In-map, it surfaces "bother yes/no
 User specified. Reference implementation is `Repositories/Stranded/Pathfinder/`.
 
 ### State model: derived from game memory, minimal settings
-Captured in [ADR 0002](adr/0002-derived-state-primary.md). Persistence is limited to the standard `BaseSettingsPlugin` settings file, plugin-global (not per-character, not per-league). Settings surface: Phase override, Strategy (Destructive Play vs Exarch Altars), show/hide toggles.
+Captured in [ADR 0002](adr/0002-derived-state-primary.md). Persistence is limited to the standard `BaseSettingsPlugin` settings file, plugin-global (not per-character, not per-league). Settings surface: Phase override, show/hide toggles.
 
 ## Blocking spike before implementation
 

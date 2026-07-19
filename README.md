@@ -30,6 +30,5 @@ An ExileApi overlay plugin for Path of Exile. Guides league-start atlas progress
 ## Setup
 
 1. Open the AtlasHelper settings panel in the ExileApi menu.
-2. Under **Progression**, pick a **Strategy** (`Destructive Play` or `Exarch Altars`). See `Help` for what each phase and strategy means.
-3. Under **HUD Overlay**, tune colors and text scale to taste.
-4. Toggle the HUD in-game with `F3` (rebindable).
+2. Under **HUD Overlay**, tune colors and text scale to taste.
+3. Toggle the HUD in-game with `F3` (rebindable).
