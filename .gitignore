@@ -55,3 +55,7 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Plugin-specific
+.claude/settings.local.json
+Errors.txt
