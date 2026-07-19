@@ -1,8 +1,5 @@
-using System.IO;
-using System.Linq;
-using System.Text;
 using AtlasHelper.GameState;
-using AtlasHelper.GameState.Readers;
+using AtlasHelper.GameState.Diagnostics;
 using AtlasHelper.Ui;
 using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
@@ -12,8 +9,7 @@ namespace AtlasHelper;
 public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
     private readonly GameStateReader _state = new();
-    private bool _flagsDumped;
-    private bool _catalogValidated;
+    private FlagDiagnostics _diagnostics = null!;
 
     public AtlasSnapshot State => _state.Current;
 
@@ -21,7 +17,11 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     {
         Settings.Overview.DrawDelegate = () => OverviewPanel.Draw(Settings);
         Settings.ConfigurationHeader.DrawDelegate = OverviewPanel.DrawConfigurationHeader;
-        Settings.Progression.Help.Reference.DrawDelegate = ProgressionReferencePanel.Draw;
+        Settings.Progression.Reference.DrawDelegate = ProgressionReferencePanel.Draw;
+        _diagnostics = new FlagDiagnostics(
+            DirectoryFullName,
+            msg => LogMessage(msg, 10f),
+            msg => LogError(msg, 30f));
         return true;
     }
 
@@ -33,50 +33,8 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     public override Job Tick()
     {
         _state.RefreshIfStale(GameController);
-        DumpFlagCandidatesOnce();
-        ValidateCatalogOnce();
+        _diagnostics.RunOnce(GameController);
         return null;
-    }
-
-    private void DumpFlagCandidatesOnce()
-    {
-        if (_flagsDumped || GameController?.IngameState?.Data?.ServerData?.QuestFlags == null)
-            return;
-
-        var flags = QuestFlagLookup.Build(GameController);
-        var trueFlags = flags.Keys
-            .Where(k => flags.Get(k) == true)
-            .OrderBy(k => k)
-            .ToList();
-
-        var sb = new StringBuilder();
-        sb.AppendLine("value\tname");
-        foreach (var name in trueFlags)
-            sb.Append("True").Append('\t').AppendLine(name);
-
-        var path = Path.Combine(DirectoryFullName, "QuestFlagDump.tsv");
-        File.WriteAllText(path, sb.ToString());
-        LogMessage($"[AtlasHelper] Dumped {trueFlags.Count} true quest flags to {path}", 10f);
-
-        _flagsDumped = true;
-    }
-
-    private void ValidateCatalogOnce()
-    {
-        if (_catalogValidated || GameController?.IngameState?.Data?.ServerData?.QuestFlags == null)
-            return;
-
-        var result = AtlasQuestFlags.Validate(GameController);
-        if (result.Unresolved.Count == 0)
-        {
-            LogMessage($"[AtlasHelper] Quest flag catalog: {result.Total}/{result.Total} resolved.", 10f);
-        }
-        else
-        {
-            LogError($"[AtlasHelper] Quest flag catalog: {result.Unresolved.Count} unresolved of {result.Total}. Missing: {string.Join(", ", result.Unresolved)}", 30f);
-        }
-
-        _catalogValidated = true;
     }
 
     public override void Render()

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ExileCore;
 
-namespace AtlasHelper.GameState.Readers;
+namespace AtlasHelper.GameState;
 
 // Central catalog of every QuestFlag name the plugin reads, grouped to
 // mirror the GameState modules. Names marked TODO are placeholders until

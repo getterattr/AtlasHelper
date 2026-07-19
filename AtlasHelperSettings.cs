@@ -41,13 +41,6 @@ public class ProgressionSettings
         Value = "Auto",
     };
 
-    [Menu("Help", "Phase definitions.")]
-    public ProgressionHelpSettings Help { get; set; } = new();
-}
-
-[Submenu(CollapsedByDefault = true)]
-public class ProgressionHelpSettings
-{
     [Menu("Reference", "Phase definitions.")]
     [JsonIgnore]
     public CustomNode Reference { get; set; } = new();
