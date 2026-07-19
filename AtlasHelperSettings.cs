@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Windows.Forms;
 using ExileCore.Shared.Attributes;
 using ExileCore.Shared.Interfaces;
 using ExileCore.Shared.Nodes;
@@ -40,6 +41,13 @@ public class ProgressionSettings
         Value = "Destructive Play",
     };
 
+    [Menu("Help", "Phase and strategy definitions.")]
+    public ProgressionHelpSettings Help { get; set; } = new();
+}
+
+[Submenu(CollapsedByDefault = true)]
+public class ProgressionHelpSettings
+{
     [Menu("Reference", "Phase and strategy definitions.")]
     [JsonIgnore]
     public CustomNode Reference { get; set; } = new();
@@ -51,11 +59,11 @@ public class HudOverlaySettings
     [Menu("Show", "Show or hide the HUD panel.")]
     public ToggleNode Show { get; set; } = new(true);
 
+    [Menu("Toggle Hotkey", "Key that toggles the HUD panel on and off.")]
+    public HotkeyNodeV2 ToggleHotkey { get; set; } = new(Keys.F3);
+
     [Menu("Text Scale", "Size multiplier for the HUD text. 1.0 = normal size.")]
     public RangeNode<float> TextScale { get; set; } = new(1f, 0.5f, 3f);
-
-    [Menu("Padding", "Inner spacing in pixels between the HUD text and window border.")]
-    public RangeNode<float> Padding { get; set; } = new(8, 0, 40);
 
     [Menu("Text Color", "HUD text color. Use the alpha channel on the color wheel to fade text.")]
     public ColorNode TextColor { get; set; } = new(new Color(230, 230, 230, 255));

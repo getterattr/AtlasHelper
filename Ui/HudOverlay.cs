@@ -6,6 +6,7 @@ namespace AtlasHelper.Ui;
 internal static class HudOverlay
 {
     private const string WindowId = "AtlasHelper##AtlasHelperHud";
+    private const float Padding = 8f;
 
     private const ImGuiWindowFlags WindowFlags =
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
@@ -18,7 +19,7 @@ internal static class HudOverlay
         ImGui.PushStyleColor(ImGuiCol.WindowBg, Theme.ToVector4(hud.BackgroundColor.Value));
         ImGui.PushStyleColor(ImGuiCol.Text, Theme.ToVector4(hud.TextColor.Value));
         ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(hud.Padding.Value, hud.Padding.Value));
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(Padding, Padding));
 
         if (!ImGui.Begin(WindowId, WindowFlags))
         {
