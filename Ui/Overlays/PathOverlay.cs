@@ -23,7 +23,9 @@ namespace AtlasHelper.Ui.Overlays;
 // strategy.md#route-planning.
 //
 // Phase 3 is handled by AtlasOverlay (uncompleted bonus rings). Phase
-// 4 render is out of scope for the demo.
+// 4 has no path overlay: by Phase 3's end the atlas is fully unlocked,
+// so Decayed and Ceremonial acquisition is Guardian farming + pinnacle
+// fights with no atlas-routing question left to answer.
 internal static class PathOverlay
 {
     // World-unit size for the ring around a path node. Atlas node icons
