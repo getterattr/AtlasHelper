@@ -32,3 +32,23 @@ An ExileApi overlay plugin for Path of Exile. Guides league-start atlas progress
 1. Open the AtlasHelper settings panel in the ExileApi menu.
 2. Under **HUD Overlay**, tune colors and text scale to taste.
 3. Toggle the HUD in-game with `F3` (rebindable).
+
+## Development
+
+Design docs live in `.claude/docs/internal/`:
+
+- `context.md` - narrative design record, reader audit, blocking spikes.
+- `glossary.md` - canonical domain vocabulary (Phase, Voidstone, Corner, Quest Chain, ...).
+- `questline.md` - wiki-sourced facts about voidstones, Maven ladder, endgame invitations.
+- `strategy.md` - tactical business rules distilled from the league-start guide.
+- `decisions/` - current-state design docs (`scope`, `state-model`, `gamestate`, `read-pattern`).
+
+Runtime state is split into modules under `GameState/`:
+
+- `Atlas/` - map graph, bonus completion, coord projection.
+- `Voidstones/` - physical slot state and per-corner chain progression.
+- `Maven/` - witness list, 5-stage ladder, themed invitations.
+- `Pinnacles/` - individual boss kills.
+- `Diagnostics/` - startup flag dump + snapshot health check for detecting broken readers after patch offset shifts.
+
+Plugins are compiled by `Loader.exe` on HUD startup; do not run `dotnet build`. To pin canonical `QuestFlag` names, trigger a milestone in-game and diff `QuestFlagDump.tsv` (written once per session by `FlagDiagnostics`).
