@@ -11,6 +11,8 @@ internal static class HudOverlay
 {
     private const string WindowId = "AtlasHelper##AtlasHelperHud";
     private const float Padding = 8f;
+    private const string AdvisoryPrefix = "> ";
+    private const string AdvisoryIndent = "  ";
 
     private const ImGuiWindowFlags WindowFlags =
         ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
@@ -42,9 +44,25 @@ internal static class HudOverlay
 
     private static void DrawBody(AtlasHelperSettings settings, AtlasSnapshot state)
     {
-        ImGui.Text($"Phase:       {FormatPhaseLine(settings, state)}");
+        var advisory = Advisory.From(settings, state);
+        DrawAdvisory(advisory);
         ImGui.Separator();
+        DrawSummary(settings, state);
+    }
 
+    private static void DrawAdvisory(AdvisoryLine advisory)
+    {
+        var lines = advisory.Text.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var prefix = i == 0 ? AdvisoryPrefix : AdvisoryIndent;
+            ImGui.Text($"{prefix}{lines[i]}");
+        }
+    }
+
+    private static void DrawSummary(AtlasHelperSettings settings, AtlasSnapshot state)
+    {
+        ImGui.Text($"Phase:       {FormatPhaseLine(settings, state)}");
         ImGui.Text($"Voidstones:  {state.Voidstones.SocketedCount} / 4");
         ImGui.Text($"Normal maps: {state.Completion.NormalBonusCount} / {AtlasCompletion.NormalBonusTarget}");
         ImGui.Text($"Unique maps: {state.Completion.UniqueBonusCount} / {AtlasCompletion.UniqueBonusTarget}");
@@ -65,6 +83,7 @@ internal static class HudOverlay
         PhaseId.Two => "Phase 2",
         PhaseId.Three => "Phase 3",
         PhaseId.Four => "Phase 4",
+        PhaseId.Complete => "Complete",
         _ => id.ToString(),
     };
 

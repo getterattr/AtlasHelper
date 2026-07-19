@@ -26,19 +26,19 @@ See [context.md](context.md#open-tbds) for the full TBD table.
 ### 2. Session context (blocks HUD variant)
 One fact: is the player currently in a map? Drives the HUD in-town vs in-map variant switch. Lives under a new `GameState/Session/` module (`SessionContext.IsInMap`) with a `SessionReader` in `GameState/Readers/`. No further "current map" facts are read - identity, rarity, and corruption were all cut under the anti-junk lens ([decisions/scope.md](decisions/scope.md#no-post-hoc-lints-no-static-rule-readers)). Map device toggle state was cut for the same reason.
 
-### 3. Business synthesis (Advisory blocked only by Phase; InMapAdvice blocked by 2)
-Lives under `Services/` - stateless synthesis of `AtlasSnapshot` into higher-order domain values. See [`Services/README.md`](../../../Services/README.md) for the pattern. `Services/Phase.cs` is the reference implementation (currently a placeholder returning the default).
+### 3. Business synthesis
+Lives under `Services/` - stateless synthesis of `AtlasSnapshot` into higher-order domain values. See [`Services/README.md`](../../../Services/README.md) for the pattern.
 
-- **Phase inference** (`Services/Phase.cs`). `Phase.From(AtlasSnapshot) -> PhaseInference` (PhaseId + reason). Voidstones + bonus + chain state resolve to Phase 1-4. Reason is the trigger (e.g. "Eldritch not socketed").
-- **Advisory composer** (`Services/Advisory.cs`, new). `Advisory.From(AtlasSnapshot) -> AdvisoryLine`. Composes run-priority rules ([strategy.md#run-priority](strategy.md#run-priority)) into a single "▶ Run next" sentence. Falls back to "highest tier" when chain state is null. Consumes `Services/Pathfinding` (predicate-driven BFS - "nearest T1", "specific chain-target node", "nearest unbonused", etc.) for whichever pathing question the phase is asking. The rarity reminder per tier band ([strategy.md#rarity-rules](strategy.md#rarity-rules)) is emitted inline from `AtlasTree` tier data - no `Rarity.cs` service.
-- **In-map advice** (`Services/InMapAdvice.cs`, new). Static rendering of the four-step in-map loop ([strategy.md#in-map-loop](strategy.md#in-map-loop)) when `SessionContext.IsInMap`. No drop-state read, no per-map identity - the loop is the same regardless of map.
+- **Phase inference** (`Services/Phase.cs`) - done. `Phase.From(AtlasSnapshot) -> PhaseInference` and `Phase.Resolve(settings, snapshot) -> PhaseId` (honours the override).
+- **Advisory composer** (`Services/Advisory.cs`) - done. Discriminated union: `abstract record AdvisoryLine` with `Phase1Advisory` / `Phase2Advisory` / `Phase3Advisory` / `Phase4Advisory` cases. Phase 3 owns the tier-band sweep (whites -> yellows -> reds via `TierBand`) plus the uniques-only endgame. Phase 1/2/4 ship as minimal static lines; text refines as the TBD F chain-step flags resolve.
+- **In-map advice** (`Services/InMapAdvice.cs`, new) - open. Static rendering of the four-step in-map loop ([strategy.md#in-map-loop](strategy.md#in-map-loop)) when `SessionContext.IsInMap`.
 
 ### 4. Surfaces (consumes 3)
 UI lives under `Ui/`, split by audience: `Ui/Overlays/` for in-game surfaces the player sees while playing, `Ui/Panels/` for settings-panel content in the ExileApi menu. `Theme.cs` and `ImGuiHelpers.cs` sit at the `Ui/` root as shared utilities.
 
-- **HUD redesign** (`Ui/Overlays/HudOverlay`). Lead with the Advisory line, chains second, counters last. In-town vs in-map variants.
-- **Atlas overlay phase-awareness** (`Ui/Overlays/AtlasOverlay`). Ring color by tier band, solid for phase-relevant nodes, chain-gating accent, Eagon-eligible white markers during Phase 2.
-- **Boss-path arrow** (`Ui/Overlays/BossPathArrow`, new). Uses ExileApi `Areas` plus the `Repositories/Stranded/Pathfinder/` pattern. Independent track - can slot in any time after readers.
+- **HUD** (`Ui/Overlays/HudOverlay`) - Advisory-led. Advisory line on top, Normal + Uniques counters adjacent, Phase / Voidstones / Maven grid below. In-town vs in-map variants remain open (blocked on InMapAdvice).
+- **AtlasOverlay** (`Ui/Overlays/AtlasOverlay`) - Phase 3 only. Consumes `Phase3Advisory` to filter unbonused non-uniques by the active `TierBand`; uniques rendered in `UniqueHighlightColor`; endgame flips to unique-only. Phase 1/2 pathing lives in `PathOverlay`; Phase 4 has no overlay.
+- **Boss-path arrow** (`Ui/Overlays/BossPathArrow`, new) - open. Uses ExileApi `Areas` plus the `Repositories/Stranded/Pathfinder/` pattern. Independent track - can slot in any time.
 
 ### 5. Release
 - Publishing pipeline via the `publish` skill.
@@ -47,14 +47,13 @@ UI lives under `Ui/`, split by audience: `Ui/Overlays/` for in-game surfaces the
 
 Data unblocks run in the background whenever the player triggers a milestone. Code order:
 
-1. Session context (workstream 2) - one boolean; unblocks HUD variant and InMapAdvice.
-2. Phase inference + Advisory (workstream 3) - can ship even while chain state is null; degrades to the default rule.
-3. HUD redesign - the visible win, consumes Advisory.
-4. Atlas overlay phase-awareness - extends existing overlay.
-5. Boss-path arrow - parallel any time after readers.
-6. Publish.
-
-Jumping straight to HUD skips business synthesis. Don't.
+1. ~~Session context~~ - done.
+2. ~~Phase inference + Advisory~~ - done. Phase 1/2/4 advisories are minimal static lines pending TBD F.
+3. ~~HUD redesign~~ - done for the in-town variant. In-map variant is blocked on InMapAdvice.
+4. ~~Atlas overlay phase-awareness~~ - done (Phase 3 band-gated sweep + endgame).
+5. InMapAdvice + in-map HUD variant - open.
+6. Boss-path arrow - parallel any time.
+7. Publish.
 
 ## Out of scope
 

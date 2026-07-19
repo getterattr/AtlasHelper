@@ -33,6 +33,12 @@ A Map Device toggle awarded after first meeting the Envoy. Enabling it invites t
 ## Run Priority
 The rule set the plugin uses to advise the next map to run. Rules live in [strategy.md#run-priority](strategy.md#run-priority).
 
+## Tier Band
+One of three groupings of atlas map tiers by required Bonus Completion rarity: **white** (T1-T5, magic), **yellow** (T6-T10, rare), **red** (T11-T16, rare + corrupted). Phase 3 sweeps unbonused nodes band-by-band in that order.
+
+## Advisory
+The plugin's per-phase "what to do next" line, rendered in the HUD. Carries phase-specific detail so downstream surfaces (AtlasOverlay band filter, overlay palette) render coherently with what the HUD says. See [strategy.md](strategy.md) for the rules the Advisory encodes.
+
 ## Completed Frontier
 The outward-expanding boundary of atlas nodes the player has already completed. A node is *reachable* once one of its connected neighbours is in the completed frontier. Route planning ([strategy.md#route-planning](strategy.md#route-planning)) treats the frontier as the destination when pathing from a voidstone corner back toward the player's progress.
 

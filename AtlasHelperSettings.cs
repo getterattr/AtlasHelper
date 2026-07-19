@@ -80,8 +80,11 @@ public class AtlasOverlaySettings
     [Menu("Hide Uniques Past Cap", "Once 10 unique-map bonus completions are earned, stop highlighting the remaining uncompleted uniques (they no longer grant bonus points).")]
     public ToggleNode HideUniquesPastCap { get; set; } = new(true);
 
-    [Menu("Highlight Color", "Color of the outlined highlight over an uncompleted node.")]
+    [Menu("Highlight Color", "Color of the outlined highlight over unbonused non-unique nodes in the active tier band.")]
     public ColorNode HighlightColor { get; set; } = new(new Color(255, 200, 60, 220));
+
+    [Menu("Unique Highlight Color", "Color of the outlined highlight over unbonused unique nodes.")]
+    public ColorNode UniqueHighlightColor { get; set; } = new(new Color(180, 120, 220, 220));
 
     [Menu("Border Thickness", "Stroke width of the highlight border in pixels.")]
     public RangeNode<float> BorderThickness { get; set; } = new(2f, 1f, 6f);

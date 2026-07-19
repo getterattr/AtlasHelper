@@ -14,10 +14,11 @@ namespace AtlasHelper.Services;
 
 public enum PhaseId
 {
-    One,   // First voidstone: Eldritch (Exarch + Eater)
-    Two,   // Second voidstone: Originator (Eagon) + 10-way Maven
-    Three, // 100% bonus completion (100 normal + 10 unique)
-    Four,  // Final voidstones: Decayed (Shaper + Elder), Ceremonial (Maven)
+    One,      // First voidstone: Eldritch (Exarch + Eater)
+    Two,      // Second voidstone: Originator (Eagon) + 10-way Maven
+    Three,    // 100% bonus completion (100 normal + 10 unique)
+    Four,     // Final voidstones: Decayed (Shaper + Elder), Ceremonial (Maven)
+    Complete, // All 4 voidstones socketed - atlas progression done.
 }
 
 public sealed record PhaseInference(PhaseId Id, string Reason)
@@ -28,8 +29,27 @@ public sealed record PhaseInference(PhaseId Id, string Reason)
 
 public static class Phase
 {
+    // Resolves the phase the UI should render for, honouring the user's
+    // manual override. Shared by every surface that renders phase-scoped
+    // output (HUD, atlas overlays, path overlay, advisory) so the override
+    // is respected in exactly one place.
+    public static PhaseId Resolve(AtlasHelperSettings settings, AtlasSnapshot snapshot)
+    {
+        return settings.Progression.PhaseOverride.Value switch
+        {
+            "Phase 1" => PhaseId.One,
+            "Phase 2" => PhaseId.Two,
+            "Phase 3" => PhaseId.Three,
+            "Phase 4" => PhaseId.Four,
+            _ => From(snapshot).Id,
+        };
+    }
+
     public static PhaseInference From(AtlasSnapshot snapshot)
     {
+        if (snapshot.Voidstones.SocketedCount >= 4)
+            return new PhaseInference(PhaseId.Complete, "all four voidstones socketed");
+
         var eldritchSocketed = IsSocketed(snapshot.Voidstones, VoidstoneKind.Eldritch);
         if (!eldritchSocketed)
             return new PhaseInference(PhaseId.One, "Eldritch not socketed");

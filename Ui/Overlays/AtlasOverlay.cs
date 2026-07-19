@@ -7,9 +7,10 @@ using Graphics = ExileCore.Graphics;
 
 namespace AtlasHelper.Ui.Overlays;
 
-// Phase-3 render surface. Highlights every uncompleted bonus-eligible
-// node so the player can sweep them. Phase 1 and Phase 2 paths are
-// drawn by PathOverlay instead.
+// Phase-3 render surface. Consumes Phase3Advisory to decide which nodes
+// to circle: the active tier band's unbonused non-uniques (during the
+// sweep), or nothing but unbonused uniques (during the endgame). Phase 1
+// and Phase 2 paths are drawn by PathOverlay; Phase 4 has no overlay.
 internal static class AtlasOverlay
 {
     private const float NodeIconSize = 53f;
@@ -30,7 +31,7 @@ internal static class AtlasOverlay
         if (!overlay.Show.Value) return;
         if (atlas == null || !atlas.IsVisible) return;
 
-        if (ResolvePhase(settings, state) != PhaseId.Three) return;
+        if (Advisory.From(settings, state) is not Phase3Advisory advisory) return;
 
         var canvas = atlas.GetChildAtIndex(0);
         var canvasChildren = canvas?.Children;
@@ -47,7 +48,8 @@ internal static class AtlasOverlay
         var includeUniques = overlay.IncludeUniques.Value;
         var hideUniquesPastCap = overlay.HideUniquesPastCap.Value;
         var uniqueCapHit = state.Completion.UniqueBonusComplete;
-        var color = overlay.HighlightColor.Value;
+        var bandColor = overlay.HighlightColor.Value;
+        var uniqueColor = overlay.UniqueHighlightColor.Value;
         var thickness = (int)overlay.BorderThickness.Value;
 
         foreach (var element in canvasChildren)
@@ -70,6 +72,8 @@ internal static class AtlasOverlay
             // any completion flags.
             if (!node.GrantsBonus) continue;
 
+            var color = bandColor;
+
             if (node.IsUnique)
             {
                 // Uniques never appear in BonusCompletedNodes; use the Completed
@@ -77,9 +81,22 @@ internal static class AtlasOverlay
                 if (!includeUniques) continue;
                 if (node.Completed) continue;
                 if (hideUniquesPastCap && uniqueCapHit) continue;
+                color = uniqueColor;
+            }
+            else if (advisory.UniquesOnly)
+            {
+                // Endgame: only unbonused uniques are actionable.
+                continue;
             }
             else if (node.BonusCompleted)
             {
+                continue;
+            }
+            else if (TierBands.For(node.BaseTier) != advisory.ActiveBand)
+            {
+                // Non-unique but outside the currently-active band. Player is
+                // being steered to sweep whites/yellows/reds in order, so
+                // stay silent on the other bands.
                 continue;
             }
 
@@ -90,18 +107,6 @@ internal static class AtlasOverlay
             var radius = (rect.Width < rect.Height ? rect.Width : rect.Height) * 0.5f;
             graphics.DrawCircle(centre, radius, color, thickness, CircleSegments);
         }
-    }
-
-    private static PhaseId ResolvePhase(AtlasHelperSettings settings, AtlasSnapshot snapshot)
-    {
-        return settings.Progression.PhaseOverride.Value switch
-        {
-            "Phase 1" => PhaseId.One,
-            "Phase 2" => PhaseId.Two,
-            "Phase 3" => PhaseId.Three,
-            "Phase 4" => PhaseId.Four,
-            _ => Phase.From(snapshot).Id,
-        };
     }
 
     private static AtlasMapNode? FindNearest(AtlasTree tree, float worldX, float worldY)

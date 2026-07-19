@@ -55,7 +55,7 @@ internal static class PathOverlay
         if (!settings.AtlasOverlay.Show.Value) return;
         if (atlas == null || !atlas.IsVisible) return;
 
-        var phase = ResolvePhase(settings, snapshot);
+        var phase = Phase.Resolve(settings, snapshot);
         if (phase != PhaseId.One && phase != PhaseId.Two) return;
 
         var byId = BuildLookup(snapshot.Tree);
@@ -67,18 +67,6 @@ internal static class PathOverlay
         if (paths.Count == 0) return;
 
         RenderPaths(graphics, atlas, paths, snapshot);
-    }
-
-    private static PhaseId ResolvePhase(AtlasHelperSettings settings, AtlasSnapshot snapshot)
-    {
-        return settings.Progression.PhaseOverride.Value switch
-        {
-            "Phase 1" => PhaseId.One,
-            "Phase 2" => PhaseId.Two,
-            "Phase 3" => PhaseId.Three,
-            "Phase 4" => PhaseId.Four,
-            _ => Phase.From(snapshot).Id,
-        };
     }
 
     private static Dictionary<string, AtlasMapNode> BuildLookup(AtlasTree tree)
