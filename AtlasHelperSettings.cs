@@ -51,21 +51,15 @@ public class HudOverlaySettings
     [Menu("Show", "Show or hide the HUD panel.")]
     public ToggleNode Show { get; set; } = new(true);
 
-    [Menu("Title", "Text shown in the HUD window title bar.")]
-    public TextNode Title { get; set; } = new("AtlasHelper");
-
-    [Menu("Opacity", "Global opacity for the HUD. 1.0 = fully opaque, lower values fade the entire overlay.")]
-    public RangeNode<float> Opacity { get; set; } = new(1f, 0.1f, 1f);
-
     [Menu("Text Scale", "Size multiplier for the HUD text. 1.0 = normal size.")]
     public RangeNode<float> TextScale { get; set; } = new(1f, 0.5f, 3f);
 
     [Menu("Padding", "Inner spacing in pixels between the HUD text and window border.")]
     public RangeNode<float> Padding { get; set; } = new(8, 0, 40);
 
-    [Menu("Text Color", "HUD text color.")]
+    [Menu("Text Color", "HUD text color. Use the alpha channel on the color wheel to fade text.")]
     public ColorNode TextColor { get; set; } = new(new Color(230, 230, 230, 255));
 
-    [Menu("Background Color", "HUD background color.")]
+    [Menu("Background Color", "HUD background color. Use the alpha channel on the color wheel to make the panel translucent.")]
     public ColorNode BackgroundColor { get; set; } = new(new Color(0, 0, 0, 200));
 }
