@@ -31,23 +31,31 @@ internal static class AtlasQuestFlags
     {
         public static class AtlasLadder
         {
-            // TODO(unresolved): MetEnvoyMaven, HaveMavenMapDeviceAlteration.
-            public const string BeaconAcquired = "GotMavensBeacon";
+            // MetEnvoyMaven is the moment Kirac/Envoy hands the Beacon
+            // over; closest real flag to "have the Beacon".
+            public const string BeaconAcquired = "MetEnvoyMaven";
 
             // Semi-confident: MavenFirstInvitation matches Stage 1
-            // ("first invitation seen/accepted"). Stage 2-5 have no
-            // clear candidates in the dump. Also worth checking:
-            // Entered{First,Second,Third}PinnacleBossArea.
+            // ("first invitation seen/accepted").
             public const string Stage1 = "MavenFirstInvitation";
+            // TODO(fabricated): Files.QuestFlags catalog confirms
+            // MavensCrucibleStage{2..5}Complete are NOT real POE flags.
+            // The 5-stage ladder progression is not exposed as a
+            // per-stage flag; likely derived from splinter/witness
+            // counters in ServerData. Left as null-returning constants
+            // for API stability; consumers must handle null.
             public const string Stage2 = "MavensCrucibleStage2Complete";
             public const string Stage3 = "MavensCrucibleStage3Complete";
             public const string Stage4 = "MavensCrucibleStage4Complete";
             public const string Stage5 = "MavensCrucibleStage5Complete";
         }
 
-        // TODO(unresolved): the six HaveMavenMapVoid1-6 flags line up
-        // with six themed invitations. Ordering unknown - map after
-        // completing each theme in a test session.
+        // TODO(fabricated): Files.QuestFlags catalog confirms no
+        // MavensInvitationThe{X}Complete flags exist. POE tracks themed
+        // invitation completion via inventory/item state (invitation
+        // items are consumed on run). If completion state is ever needed
+        // it must come from a different source; catalog constants here
+        // are placeholders that never resolve.
         public static class ThemedInvitations
         {
             public const string Formed = "MavensInvitationTheFormedComplete";
@@ -93,9 +101,12 @@ internal static class AtlasQuestFlags
             public const string EagonIntroductionSeen = "EagonIntroductionSeen";
             // Incarnations - two mid-tier, one final (Dread in Pinnacles).
             // Ignorance = Dread, Benevolence = Neglect, Fear = Fear.
-            // Fear flag is a guess (no defeat flag in dump, only KeyHeld
-            // + HaveQuestKey); validator will flag if wrong.
             public const string IncarnationOfNeglectDefeated = "BenevolenceBossNonQuestDefeated";
+            // TODO(fabricated): Files.QuestFlags catalog confirms no
+            // FearBossNonQuestDefeated. Fear is fought only inside the
+            // Threads-of-the-Originator quest chain - no non-quest
+            // defeat mechanism exists. Fall back to derived state:
+            // Fear is defeated when all three memory maps are Completed.
             public const string IncarnationOfFearDefeated = "FearBossNonQuestDefeated";
         }
 
@@ -103,7 +114,11 @@ internal static class AtlasQuestFlags
         // DecayedReader reads the tree directly.
     }
 
-    // Every constant declared above must appear in this list.
+    // Every constant we expect Files.QuestFlags to resolve. Flags marked
+    // TODO(fabricated) above (Maven Crucible stages 2-5, themed
+    // invitations, FearBossNonQuestDefeated) are intentionally excluded -
+    // they do not exist in POE's flag definitions and would just add
+    // noise to the startup validation log.
     private static readonly string[] All =
     {
         Pinnacles.Maven, Pinnacles.Shaper, Pinnacles.Elder,
@@ -111,11 +126,7 @@ internal static class AtlasQuestFlags
         Pinnacles.IncarnationOfDread, Pinnacles.Sirus,
 
         Maven.AtlasLadder.BeaconAcquired,
-        Maven.AtlasLadder.Stage1, Maven.AtlasLadder.Stage2, Maven.AtlasLadder.Stage3,
-        Maven.AtlasLadder.Stage4, Maven.AtlasLadder.Stage5,
-        Maven.ThemedInvitations.Formed, Maven.ThemedInvitations.Twisted,
-        Maven.ThemedInvitations.Elderslayers, Maven.ThemedInvitations.Forgotten,
-        Maven.ThemedInvitations.Remembered, Maven.ThemedInvitations.Feared,
+        Maven.AtlasLadder.Stage1,
 
         Voidstones.Eldritch.Exarch.EnvoyMet, Voidstones.Eldritch.Exarch.InfluenceUnlocked,
         Voidstones.Eldritch.Exarch.PolaricInvitationDropped, Voidstones.Eldritch.Exarch.BlackStarDefeated,
@@ -126,7 +137,6 @@ internal static class AtlasQuestFlags
 
         Voidstones.Originator.EagonMet, Voidstones.Originator.EagonIntroductionSeen,
         Voidstones.Originator.IncarnationOfNeglectDefeated,
-        Voidstones.Originator.IncarnationOfFearDefeated,
     };
 
     public sealed record ValidationResult(int Total, IReadOnlyList<string> Unresolved);

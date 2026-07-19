@@ -45,6 +45,29 @@ internal sealed class FlagDiagnostics
         var trueCount = allFlags.Count(n => flags.Get(n) == true);
         _logInfo($"[AtlasHelper] Dumped {allFlags.Count} quest flags ({trueCount} true) to {path}");
 
+        // Full Files.QuestFlags catalog - the canonical superset of every
+        // flag id the game defines, regardless of whether this character
+        // has ever seen it. Useful for pinning names of flags that never
+        // surface in ServerData (e.g. Maven Crucible stages 2-5 before
+        // the ladder has progressed that far).
+        var catalog = gc.Files?.QuestFlags?.EntriesList;
+        if (catalog != null)
+        {
+            var catalogSb = new StringBuilder();
+            catalogSb.AppendLine("id");
+            var ids = new List<string>(catalog.Count);
+            foreach (var entry in catalog)
+            {
+                if (entry?.Id is { } id && id.Length > 0) ids.Add(id);
+            }
+            ids.Sort(System.StringComparer.OrdinalIgnoreCase);
+            foreach (var id in ids)
+                catalogSb.AppendLine(id);
+            var catalogPath = Path.Combine(_dumpDirectory, "QuestFlagCatalog.tsv");
+            File.WriteAllText(catalogPath, catalogSb.ToString());
+            _logInfo($"[AtlasHelper] Dumped {ids.Count} Files.QuestFlags catalog ids to {catalogPath}");
+        }
+
         var result = AtlasQuestFlags.Validate(gc);
         if (result.Unresolved.Count == 0)
             _logInfo($"[AtlasHelper] Quest flag catalog: {result.Total}/{result.Total} resolved.");
