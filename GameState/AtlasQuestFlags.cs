@@ -27,6 +27,8 @@ internal static class AtlasQuestFlags
     {
         public static class AtlasLadder
         {
+            // TODO: pin canonical name via QuestFlagDump.tsv - placeholder
+            public const string BeaconAcquired = "GotMavensBeacon";
             public const string Stage1 = "MavensCrucibleStage1Complete";
             public const string Stage2 = "MavensCrucibleStage2Complete";
             public const string Stage3 = "MavensCrucibleStage3Complete";
@@ -101,15 +103,6 @@ internal static class AtlasQuestFlags
         }
     }
 
-    // Map Device toggles. Cross-cutting - feeds several voidstone chains.
-    public static class Beacons
-    {
-        // TODO: pin canonical names via QuestFlagDump.tsv
-        public const string Maven = "GotMavensBeacon";
-        public const string SearingExarch = "SearingExarchIntroduced";
-        public const string EaterOfWorlds = "EaterOfWorldsIntroduced";
-    }
-
     // Every constant declared above must appear in this list.
     private static readonly string[] All =
     {
@@ -117,6 +110,7 @@ internal static class AtlasQuestFlags
         Pinnacles.SearingExarch, Pinnacles.EaterOfWorlds,
         Pinnacles.IncarnationOfDread, Pinnacles.Sirus,
 
+        Maven.AtlasLadder.BeaconAcquired,
         Maven.AtlasLadder.Stage1, Maven.AtlasLadder.Stage2, Maven.AtlasLadder.Stage3,
         Maven.AtlasLadder.Stage4, Maven.AtlasLadder.Stage5,
         Maven.ThemedInvitations.Formed, Maven.ThemedInvitations.Twisted,
@@ -140,8 +134,6 @@ internal static class AtlasQuestFlags
         Voidstones.Decayed.MinotaurDefeated, Voidstones.Decayed.PhoenixDefeated,
         Voidstones.Decayed.EnslaverDefeated, Voidstones.Decayed.ConstrictorDefeated,
         Voidstones.Decayed.PurifierDefeated, Voidstones.Decayed.EradicatorDefeated,
-
-        Beacons.Maven, Beacons.SearingExarch, Beacons.EaterOfWorlds,
     };
 
     public sealed record ValidationResult(int Total, IReadOnlyList<string> Unresolved);

@@ -21,9 +21,7 @@ public sealed record AtlasSnapshot(
     // Maven-owned state
     Witnesses Witnesses,
     AtlasInvitation AtlasInvitation,
-    ThemedInvitations ThemedInvitations,
-    // Map Device toggles
-    AtlasBeacons Beacons)
+    ThemedInvitations ThemedInvitations)
 {
     public static AtlasSnapshot Empty { get; } = new(
         DateTime.MinValue,
@@ -36,6 +34,5 @@ public sealed record AtlasSnapshot(
         PinnacleBosses.Empty,
         Witnesses.Empty,
         AtlasInvitation.Empty,
-        ThemedInvitations.Empty,
-        AtlasBeacons.Empty);
+        ThemedInvitations.Empty);
 }

@@ -6,7 +6,11 @@ namespace AtlasHelper.GameState.Maven;
 //   Stage 3: 5-way  (5 bosses at T10+)
 //   Stage 4: 6-way  (6 bosses at T12+)
 //   Stage 5: 10-way (10 bosses at T14+, repeatable)
+//
+// BeaconAcquired tracks whether Maven's Beacon is available as a Map
+// Device toggle - the ladder cannot progress without it.
 public sealed record AtlasInvitation(
+    bool? BeaconAcquired,
     int? CompletedStage,
     int WitnessedBossCount)
 {
@@ -31,5 +35,5 @@ public sealed record AtlasInvitation(
             ? (WitnessedBossCount > target ? target : WitnessedBossCount)
             : 0;
 
-    public static AtlasInvitation Empty { get; } = new(null, 0);
+    public static AtlasInvitation Empty { get; } = new(null, null, 0);
 }

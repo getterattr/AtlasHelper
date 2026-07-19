@@ -24,6 +24,9 @@ internal static class AtlasInvitationReader
         }
 
         var witnessed = gc.IngameState.Data.ServerData.MavenWitnessedAreas?.Count ?? 0;
-        return new AtlasInvitation(completedStage, witnessed);
+        return new AtlasInvitation(
+            BeaconAcquired: flags.Get(AtlasQuestFlags.Maven.AtlasLadder.BeaconAcquired),
+            CompletedStage: completedStage,
+            WitnessedBossCount: witnessed);
     }
 }
