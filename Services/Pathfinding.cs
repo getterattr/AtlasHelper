@@ -99,4 +99,120 @@ public static class Pathfinding
         path.Reverse();
         return new AtlasPath(path);
     }
+
+    // Chains BFS through `orderedTargetAreaIds` in the exact order given.
+    // Each leg's start is the previous leg's destination; the join node
+    // is not duplicated in the returned path.
+    //
+    // Use when the ordering is domain-required (e.g. the Ceremonial
+    // voidstone must be the final leg, Eagon's memory maps must be
+    // completed in a specific sequence). If any leg has no path, the
+    // whole route returns Empty.
+    public static AtlasPath FindOrderedPath(
+        AtlasTree tree,
+        string startAreaId,
+        IReadOnlyList<string> orderedTargetAreaIds)
+    {
+        if (orderedTargetAreaIds.Count == 0)
+            return AtlasPath.Empty;
+
+        var combined = new List<AtlasMapNode>();
+        var currentStart = startAreaId;
+
+        for (var i = 0; i < orderedTargetAreaIds.Count; i++)
+        {
+            var targetId = orderedTargetAreaIds[i];
+            var leg = FindPath(tree, currentStart, n => n.AreaId == targetId);
+            if (leg.Length == 0)
+                return AtlasPath.Empty;
+
+            var skipFirst = combined.Count > 0;
+            for (var j = skipFirst ? 1 : 0; j < leg.Nodes.Count; j++)
+                combined.Add(leg.Nodes[j]);
+
+            currentStart = targetId;
+        }
+
+        return new AtlasPath(combined);
+    }
+
+    // Enumerates every ordering of `targetAreaIds` and returns the
+    // multi-target route that:
+    //   1. hits every target at least once
+    //   2. has the fewest total hops
+    //   3. tie-broken by the most unbonused (GrantsBonus && !BonusCompleted)
+    //      nodes on the route
+    //
+    // Fits the Phase 1 case: hit both Polaric Void (T11 Exarch) and
+    // Seething Chime (T11 Eater) with maximum bonus completion along
+    // the shortest route. Caller may append fixed endpoints via
+    // FindOrderedPath (e.g. add the voidstone corner as the tail leg).
+    //
+    // Permutation count is n! - practical up to ~7 targets given the
+    // per-permutation cost is (n+1) BFS calls at O(V + E). Phase 1 is
+    // n=2 (6 permutation-legs). No memoisation until profiling calls
+    // for it.
+    public static AtlasPath FindMultiTargetPath(
+        AtlasTree tree,
+        string startAreaId,
+        IReadOnlyList<string> targetAreaIds)
+    {
+        if (targetAreaIds.Count <= 1)
+            return FindOrderedPath(tree, startAreaId, targetAreaIds);
+
+        AtlasPath best = AtlasPath.Empty;
+        var bestLength = int.MaxValue;
+        var bestBonusCount = -1;
+
+        foreach (var permutation in Permute(targetAreaIds))
+        {
+            var candidate = FindOrderedPath(tree, startAreaId, permutation);
+            if (candidate.Length == 0) continue;
+            if (candidate.Length > bestLength) continue;
+
+            var bonusCount = CountBonusOpportunities(candidate);
+
+            if (candidate.Length < bestLength ||
+                (candidate.Length == bestLength && bonusCount > bestBonusCount))
+            {
+                best = candidate;
+                bestLength = candidate.Length;
+                bestBonusCount = bonusCount;
+            }
+        }
+
+        return best;
+    }
+
+    private static IEnumerable<IReadOnlyList<string>> Permute(IReadOnlyList<string> items)
+    {
+        if (items.Count <= 1)
+        {
+            yield return items;
+            yield break;
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            var head = items[i];
+            var rest = new List<string>(items.Count - 1);
+            for (var j = 0; j < items.Count; j++)
+                if (j != i) rest.Add(items[j]);
+
+            foreach (var sub in Permute(rest))
+            {
+                var perm = new List<string>(items.Count) { head };
+                perm.AddRange(sub);
+                yield return perm;
+            }
+        }
+    }
+
+    private static int CountBonusOpportunities(AtlasPath path)
+    {
+        var count = 0;
+        foreach (var node in path.Nodes)
+            if (node.GrantsBonus && !node.BonusCompleted) count++;
+        return count;
+    }
 }

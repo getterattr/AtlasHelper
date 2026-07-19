@@ -21,6 +21,9 @@ Ui/          rendering    (how to SHOW it)
 ## Files
 
 - `Phase.cs` - phase inference (Phase 1-4 based on voidstones + bonus + chain state).
-- `Pathfinding.cs` - BFS across the atlas graph. Takes a destination predicate so one algorithm covers every atlas pathing question: nearest T1 for Phase 1 unlock planning, specific target for chain steps (Polaric Void, Seething Chime), nearest unfinished T1 for Phase 3 tier-boost, nearest bonus-eligible unique, etc.
+- `Pathfinding.cs` - BFS across the atlas graph. Three entry points, same algorithm:
+  - `FindPath(start, isDestination)` - predicate-driven single-target BFS (nearest T1, specific chain target, nearest unbonused, ...).
+  - `FindOrderedPath(start, orderedTargets)` - chains BFS through targets in the exact order given. Use when the ordering is domain-required (Ceremonial voidstone must be last, memory maps in sequence, ...).
+  - `FindMultiTargetPath(start, targets)` - enumerates every ordering, returns the route with fewest total hops, tie-broken by most unbonused nodes traversed. Fits Phase 1's "hit both Polaric Void and Seething Chime with max bonus completion along the shortest route".
 
 More arrive as workstream 3 lands - see [roadmap](../.claude/docs/internal/roadmap.md#3-business-synthesis-blocked-by-2-degrades-gracefully-without-1).
