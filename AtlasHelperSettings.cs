@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ExileCore.Shared.Attributes;
 using ExileCore.Shared.Interfaces;
 using ExileCore.Shared.Nodes;
+using Newtonsoft.Json;
 using Color = SharpDX.Color;
 
 namespace AtlasHelper;
@@ -17,6 +18,10 @@ public class AtlasHelperSettings : ISettings
         Values = new List<string> { "Auto", "Phase 1", "Phase 2", "Phase 3", "Phase 4" },
         Value = "Auto",
     };
+
+    [Menu("Phase Guide", "What each phase means and when it starts. Read this before overriding.")]
+    [JsonIgnore]
+    public CustomNode PhaseGuide { get; set; } = new();
 
     [Menu(
         "Strategy",
