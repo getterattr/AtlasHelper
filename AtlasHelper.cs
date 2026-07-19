@@ -2,28 +2,24 @@ using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
 using ImGuiNET;
 using System.Numerics;
+using Color = SharpDX.Color;
+using ImGuiVector4 = System.Numerics.Vector4;
 
 namespace AtlasHelper;
 
 public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
-    public override bool Initialise()
-    {
-        return true;
-    }
+    public override bool Initialise() => true;
 
     public override void AreaChange(AreaInstance area)
     {
     }
 
-    public override Job Tick()
-    {
-        return null;
-    }
+    public override Job Tick() => null;
 
     public override void Render()
     {
-        if (!Settings.ShowHud.Value)
+        if (!Settings.Hud.Show.Value)
             return;
 
         DrawHudPanel();
@@ -35,8 +31,16 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 
     private void DrawHudPanel()
     {
+        var hud = Settings.Hud;
+
         ImGui.SetNextWindowPos(new Vector2(20, 120), ImGuiCond.FirstUseEver);
-        ImGui.SetNextWindowSize(new Vector2(260, 0), ImGuiCond.FirstUseEver);
+
+        ImGui.PushStyleColor(ImGuiCol.WindowBg, ToImGuiColor(hud.BackgroundColor.Value));
+        ImGui.PushStyleColor(ImGuiCol.Border, ToImGuiColor(hud.BorderColor.Value));
+        ImGui.PushStyleColor(ImGuiCol.Text, ToImGuiColor(hud.TextColor.Value));
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, hud.BorderRounding.Value);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, hud.BorderThickness.Value);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(hud.Padding.Value, hud.Padding.Value));
 
         const ImGuiWindowFlags flags =
             ImGuiWindowFlags.NoCollapse |
@@ -45,11 +49,14 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         if (!ImGui.Begin("AtlasHelper##AtlasHelperHud", flags))
         {
             ImGui.End();
+            ImGui.PopStyleVar(3);
+            ImGui.PopStyleColor(3);
             return;
         }
 
-        var phase = Settings.PhaseOverride.Value;
-        ImGui.Text($"Phase:       {phase}");
+        ImGui.SetWindowFontScale(hud.TextScale.Value);
+
+        ImGui.Text($"Phase:       {Settings.PhaseOverride.Value}");
         ImGui.Text($"Branch:      {Settings.Branch.Value}");
         ImGui.Separator();
 
@@ -62,8 +69,15 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         ImGui.Text("Eater chain:   pending");
         ImGui.Separator();
 
-        ImGui.TextDisabled("(values are placeholders until the spike lands)");
+        ImGui.TextDisabled("(placeholders until the spike lands)");
 
+        ImGui.SetWindowFontScale(1f);
         ImGui.End();
+
+        ImGui.PopStyleVar(3);
+        ImGui.PopStyleColor(3);
     }
+
+    private static ImGuiVector4 ToImGuiColor(Color color) =>
+        new(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
 }
