@@ -70,7 +70,17 @@ Fixed tactical loop the plugin surfaces via HUD once the player enters a map:
 3. **One more drop chance.** If no map dropped, run one nearby drop-friendly event - shrine pack, league mechanic - then re-check.
 4. **Leave.** No further mechanics.
 
-The HUD's "bother with this map: yes/no" line summarises steps 2-3 for the current map based on drop state.
+The HUD renders these four steps as a static reminder while the player is in a map. Dynamic "bother yes/no" reasoning is not attempted: map-item drop detection is out of scope ([decisions/scope.md](decisions/scope.md)), and a nag telling the player they can leave is post-hoc lint territory.
+
+## Route planning
+
+Reaching a voidstone corner slot to socket the voidstone requires unlocking a path of adjacent maps. The plugin routes on the atlas graph **from the corner back toward the completed-frontier** — the nearest node the player has already completed. This reveals the shortest sequence of maps that must be run to unlock the corner.
+
+- **Start**: the voidstone corner slot (Eldritch bottom-left, Originator top-left, Decayed top-right, Ceremonial bottom-right).
+- **Destination**: nearest node with `Completed = true`. Fallback when no maps are completed yet is TBD.
+- **Play order**: reverse the returned path - from the completed frontier walking outward to the corner.
+
+For Phase 1 specifically, the strategy names two required T11 intermediate stops in the bottom-left quadrant - **Polaric Void** (Exarch T11) and **Seething Chime** (Eater T11) - because the Exarch and Eater questlines cannot progress without both invitation types dropping.
 
 ## Rarity rules
 

@@ -32,3 +32,9 @@ A Map Device toggle awarded after first meeting the Envoy. Enabling it invites t
 
 ## Run Priority
 The rule set the plugin uses to advise the next map to run. Rules live in [strategy.md#run-priority](strategy.md#run-priority).
+
+## Completed Frontier
+The outward-expanding boundary of atlas nodes the player has already completed. A node is *reachable* once one of its connected neighbours is in the completed frontier. Route planning ([strategy.md#route-planning](strategy.md#route-planning)) treats the frontier as the destination when pathing from a voidstone corner back toward the player's progress.
+
+## Socketing
+The act of placing a voidstone item into its corner slot on the atlas panel. Each voidstone must be socketed to take effect (raises all map tiers by four). Socketing requires physically reaching the corner slot, which in turn requires unlocking a path of adjacent maps.

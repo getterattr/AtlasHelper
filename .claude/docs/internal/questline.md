@@ -4,7 +4,11 @@ Facts about atlas voidstone progression and Maven mechanics in Path of Exile 3.2
 
 ## Voidstones
 
-Four voidstones, one per atlas corner. Each is dropped by a distinct encounter.
+Four voidstones, one per atlas corner. Each is dropped by a distinct encounter, and each must be **socketed into its corner slot on the atlas** to take effect.
+
+Reaching a corner slot to socket a voidstone requires unlocking a path of adjacent maps: an atlas node becomes reachable once one of its connected neighbours has been completed. On a fresh atlas, only T1 nodes are initially reachable; the completed-frontier expands outward from there as the player completes maps.
+
+The four corners:
 
 | Corner | Voidstone | Source encounter |
 |---|---|---|
