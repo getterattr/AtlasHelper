@@ -217,22 +217,16 @@ public static class Pathfinding
     }
 
     // Multi-source shortest-path search: start from every node matching
-    // `isSource` in parallel, return the lowest-cost chain to the first
+    // `isSource` in parallel, return the fewest-hops chain to the first
     // node matching `isDestination`. Path is [source, ..., destination]
     // in walk order.
     //
-    // Compound cost = TierWeight * sum_of_tiers_entered + hop_count.
-    // TierWeight (1_000) dominates realistic hop counts (~100 nodes
-    // max path), so sum of tiers is the PRIMARY sort and hop count is
-    // the tiebreaker among tier-equivalent paths. This matches the
-    // Phase 1 strategic preference: prefer running easier maps even
-    // if it means running more of them - three T5s beat one T15 because
-    // a low-tier character can actually clear the three.
-    //
-    // Pinnacle boss icons and voidstone corner slots carry BaseTier = 0,
-    // so traversing them adds nothing to the tier sum (only the
-    // constant per-hop). That is correct: those nodes are not "maps
-    // to run" - they are the objectives themselves.
+    // Compound cost = HopMultiplier * hop_count + sum_of_tiers_entered.
+    // HopMultiplier (10_000) dominates atlas-scale tier sums (~166 nodes
+    // * 16 max tier), so hop count is the primary sort and tier sum is
+    // the tiebreaker among equally-short paths. Among two equally-
+    // short unlock chains the search prefers the one that walks
+    // through lower-tier maps (T11 + T11 wins over T13 + T14).
     //
     // Fits the "shortest unlock chain to an objective" question - pass
     // `n => n.Completed || n.BaseTier == 1` for the source predicate
@@ -247,7 +241,7 @@ public static class Pathfinding
         Func<AtlasMapNode, bool> isSource,
         Func<AtlasMapNode, bool> isDestination)
     {
-        const long TierWeight = 1_000L;
+        const long HopMultiplier = 10_000L;
 
         var byId = new Dictionary<string, AtlasMapNode>(tree.Nodes.Count);
         foreach (var node in tree.Nodes)
@@ -283,7 +277,7 @@ public static class Pathfinding
             {
                 if (!byId.TryGetValue(neighborId, out var neighbor)) continue;
 
-                var newCost = currentCost + TierWeight * neighbor.BaseTier + 1L;
+                var newCost = currentCost + HopMultiplier + neighbor.BaseTier;
                 if (cost.TryGetValue(neighborId, out var existing) && newCost >= existing) continue;
 
                 cost[neighborId] = newCost;
