@@ -1,6 +1,6 @@
 # AtlasHelper - Design Context
 
-Narrative record of the design grill that shaped v1. Complements the glossary (vocabulary only) and the ADRs (individual decisions in isolation) by preserving the flow of the conversation: what was asked, what was chosen, what was rejected, and why.
+Narrative record of the design grill that shaped the plugin. Complements the glossary (vocabulary only) and the ADRs (individual decisions in isolation) by preserving the flow of the conversation: what was asked, what was chosen, what was rejected, and why.
 
 ## Origin
 
@@ -21,13 +21,13 @@ The value at league start is cognitive offload ("what map next, which bonus am I
 ### Scope: league-start only
 Captured in [ADR 0001](adr/0001-scope-league-start-only.md). Rejected the "general-purpose atlas helper" alternative - the transcript-derived Phase machine is the plugin's entire value; generalising dilutes it.
 
-### v1 surfaces (in scope)
+### Surfaces (in scope)
 1. **HUD panel** - always-on ImGui window: Phase, voidstones (0-4), bonus completion %, Exarch/Eater chain progress, Maven witness count, "bother with this map: yes/no" line while in-map.
 2. **Atlas map-tree overlay** - draws on the atlas screen. Highlights advisory set of maps satisfying current-Phase rules, marks target Corner, per-node annotations (tier, bonus done, chain relevance).
 3. **In-map boss-path arrow** - uses ExileApi `Areas` plus the Stranded plugin's Pathfinder pattern (`Repositories/Stranded/Pathfinder/`).
 
-### v1 surfaces (explicitly out)
-- **Map inventory highlighting** - deferred to v2. Would require modelling held map items and detecting inventory panel state; not worth v1 complexity.
+### Surfaces (out of scope)
+- **Map inventory highlighting** - would require modelling held map items and detecting inventory panel state. Not worth the complexity.
 - **Atlas passive-tree overlay** - high effort (zoomable/pannable node coordinates) for a 4-times-per-league decision. Static images on the guide author's site already solve it.
 - **Atlas passive preset guidance** (Rush / Exarch Altars / Destructive Play / Essence Fallback text checklists) - rots every league when GGG rebalances; orthogonal to map-run decisions.
 - **Kirac steering suggestions** - deferred.
