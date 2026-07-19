@@ -27,8 +27,14 @@ internal static class AtlasQuestFlags
         public const string Elder = "ElderDefeated";
         public const string SearingExarch = "CleansingBossDefeated";
         public const string EaterOfWorlds = "ConsumeBossDefeated";
-        // TODO: pin via dump on an Originator-progressed character
-        public const string IncarnationOfDread = "IncarnationOfDreadComplete";
+        // Incarnation of Dread = final Threads-of-the-Originator boss.
+        // Internal atlas icon is IgnoranceBoss (top-left, directly
+        // adjacent to CleansingFireWatchstoneSlotNode / the Originator
+        // corner). Empirical evidence: IgnoranceBossNonQuestDefeated is
+        // the only non-quest-defeat flag among the top-left Incarnation
+        // trio (Benevolence, Fear, Ignorance) that fires from the
+        // corner-adjacent boss. Wiki verification blocked by anti-bot.
+        public const string IncarnationOfDread = "IgnoranceBossNonQuestDefeated";
         public const string Sirus = "SirusDefeated";
     }
 
@@ -95,11 +101,34 @@ internal static class AtlasQuestFlags
 
         public static class Originator
         {
-            // TODO: pin canonical names via QuestFlagDump.tsv - placeholders
-            public const string EagonIntroduced = "EagonIntroduced";
+            // Confirmed via dump:
+            //   MetEagon                 = player has met Eagon
+            //   EagonIntroductionSeen    = introduction cutscene seen
+            //   EagonMemoryQuestStartSeen = quest start acknowledged
+            public const string EagonMet = "MetEagon";
+            public const string EagonIntroductionSeen = "EagonIntroductionSeen";
+            // TODO: individual memory-map completion tracking - dump
+            // shows only aggregate "NonQuestMemoryBossesDefeated" plus
+            // FirstMemoryBossSeen / SecondMemoryBossSeen /
+            // ThirdMemoryBossSeen. Split-per-map completion flags may
+            // exist under other names; leaving placeholders.
             public const string CourtyardCleared = "CourtyardOfWastingComplete";
             public const string ChambersCleared = "ChambersOfImpurityComplete";
             public const string TheatreCleared = "TheatreOfLiesComplete";
+            // Incarnations of Neglect and Fear - the two mid-tier
+            // Originator-chain memory bosses (the "final" one is
+            // Incarnation of Dread, tracked as Pinnacles.IncarnationOfDread).
+            // Mappings from atlas-position + POE naming conventions:
+            //   BenevolenceBoss -> Incarnation of Neglect
+            //     (Neglect = absence of Benevolence)
+            //   FearBoss        -> Incarnation of Fear
+            //     (direct name match)
+            // Wiki verification blocked by anti-bot. FearBossNonQuestDefeated
+            // is a plausible-guess placeholder: no defeat flag surfaced in
+            // the dump (only KeyHeldBefore + HaveQuestKey), so the catalog
+            // validator will flag this as unresolved if it is wrong.
+            public const string IncarnationOfNeglectDefeated = "BenevolenceBossNonQuestDefeated";
+            public const string IncarnationOfFearDefeated = "FearBossNonQuestDefeated";
         }
 
         public static class Decayed
@@ -141,8 +170,11 @@ internal static class AtlasQuestFlags
         Voidstones.Eldritch.Eater.ScreamingInvitationDropped,
         Voidstones.Eldritch.Eater.InfiniteHungerDefeated,
 
-        Voidstones.Originator.EagonIntroduced, Voidstones.Originator.CourtyardCleared,
+        Voidstones.Originator.EagonMet, Voidstones.Originator.EagonIntroductionSeen,
+        Voidstones.Originator.CourtyardCleared,
         Voidstones.Originator.ChambersCleared, Voidstones.Originator.TheatreCleared,
+        Voidstones.Originator.IncarnationOfNeglectDefeated,
+        Voidstones.Originator.IncarnationOfFearDefeated,
 
         Voidstones.Decayed.ChimeraDefeated, Voidstones.Decayed.HydraDefeated,
         Voidstones.Decayed.MinotaurDefeated, Voidstones.Decayed.PhoenixDefeated,

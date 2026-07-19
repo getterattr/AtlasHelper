@@ -33,19 +33,17 @@ internal sealed class FlagDiagnostics
         if (gc?.IngameState?.Data?.ServerData?.QuestFlags == null) return;
 
         var flags = QuestFlagLookup.Build(gc);
-        var trueFlags = flags.Keys
-            .Where(k => flags.Get(k) == true)
-            .OrderBy(k => k)
-            .ToList();
+        var allFlags = flags.Keys.OrderBy(k => k).ToList();
 
         var sb = new StringBuilder();
         sb.AppendLine("value\tname");
-        foreach (var name in trueFlags)
-            sb.Append("True").Append('\t').AppendLine(name);
+        foreach (var name in allFlags)
+            sb.Append(flags.Get(name) == true ? "True" : "False").Append('\t').AppendLine(name);
 
         var path = Path.Combine(_dumpDirectory, "QuestFlagDump.tsv");
         File.WriteAllText(path, sb.ToString());
-        _logInfo($"[AtlasHelper] Dumped {trueFlags.Count} true quest flags to {path}");
+        var trueCount = allFlags.Count(n => flags.Get(n) == true);
+        _logInfo($"[AtlasHelper] Dumped {allFlags.Count} quest flags ({trueCount} true) to {path}");
 
         var result = AtlasQuestFlags.Validate(gc);
         if (result.Unresolved.Count == 0)

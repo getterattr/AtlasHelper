@@ -223,6 +223,13 @@ internal static class PathOverlay
             "ElderBoss" => snapshot.PinnacleBosses.Elder == true,
             "MavenBoss" => snapshot.PinnacleBosses.Maven == true,
             "SirusBoss" => snapshot.PinnacleBosses.Sirus == true,
+            // Threads-of-the-Originator Incarnations. Atlas-icon mapping:
+            //   IgnoranceBoss   = Incarnation of Dread   (final; Pinnacles)
+            //   BenevolenceBoss = Incarnation of Neglect (Originator chain)
+            //   FearBoss        = Incarnation of Fear    (Originator chain)
+            "IgnoranceBoss" => snapshot.PinnacleBosses.IncarnationOfDread == true,
+            "BenevolenceBoss" => snapshot.Originator.IncarnationOfNeglectDefeated == true,
+            "FearBoss" => snapshot.Originator.IncarnationOfFearDefeated == true,
             _ => false,
         };
     }
@@ -232,9 +239,22 @@ internal static class PathOverlay
         AtlasNodeKind.NormalMap => $"{node.AreaName} ({node.BaseTier})",
         AtlasNodeKind.UniqueMap => node.AreaName,
         AtlasNodeKind.MemoryMap => node.AreaName,
-        AtlasNodeKind.PinnacleBoss => Prettify(node.AreaId),
+        AtlasNodeKind.PinnacleBoss => PinnacleLabel(node.AreaId),
         AtlasNodeKind.VoidstoneSlot => VoidstoneLabel(node.AreaId),
         _ => node.AreaName.Length > 0 ? node.AreaName : node.AreaId,
+    };
+
+    // Wiki-facing name for the pinnacle boss icons. Handles the two
+    // families where the internal id does not match the player-facing
+    // name (Threads-of-the-Originator Incarnations - Ignorance is
+    // Dread, Benevolence is Neglect, Fear is Fear). Everything else
+    // falls through to the generic Prettify pattern.
+    private static string PinnacleLabel(string id) => id switch
+    {
+        "IgnoranceBoss" => "Incarnation of Dread",
+        "BenevolenceBoss" => "Incarnation of Neglect",
+        "FearBoss" => "Incarnation of Fear",
+        _ => Prettify(id),
     };
 
     // Strip trailing "Boss" and split PascalCase for readability.
