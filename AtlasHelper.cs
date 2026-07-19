@@ -57,7 +57,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         ImGui.SetWindowFontScale(hud.TextScale.Value);
 
         ImGui.Text($"Phase:       {Settings.PhaseOverride.Value}");
-        ImGui.Text($"Branch:      {Settings.Branch.Value}");
+        ImGui.Text($"Strategy:    {Settings.Strategy.Value}");
         ImGui.Separator();
 
         ImGui.Text("Voidstones:  0 / 4");

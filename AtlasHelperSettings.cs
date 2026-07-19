@@ -18,11 +18,15 @@ public class AtlasHelperSettings : ISettings
         Value = "Auto",
     };
 
-    [Menu("Branch", "Which endgame branch to bias recommendations toward once Phase 3 starts.")]
-    public ListNode Branch { get; set; } = new()
+    [Menu(
+        "Strategy",
+        "How you plan to acquire the 3rd and 4th voidstones.\n\n" +
+        "Destructive Play (default): you kill the Shaper, Elder, and Maven yourself. Recommendations from Phase 3 onward favour bossing prep - farming their invitations and running the fights.\n\n" +
+        "Exarch Altars: you don't want to fight the pinnacle bosses. Recommendations favour currency farming (Exarch altars) so you can buy a carry for the last two voidstones instead.")]
+    public ListNode Strategy { get; set; } = new()
     {
-        Values = new List<string> { "Exarch Altars", "Destructive Play" },
-        Value = "Exarch Altars",
+        Values = new List<string> { "Destructive Play", "Exarch Altars" },
+        Value = "Destructive Play",
     };
 
     [Menu("HUD Overlay", "Configure the always-on HUD panel showing Phase, voidstones, completion, and chain progress.")]
