@@ -1,4 +1,6 @@
 using AtlasHelper.GameState;
+using AtlasHelper.GameState.Atlas;
+using AtlasHelper.GameState.Maven;
 using ImGuiNET;
 using System.Numerics;
 
@@ -45,7 +47,18 @@ internal static class HudOverlay
         ImGui.Text($"Voidstones:  {state.Voidstones.SocketedCount} / 4");
         ImGui.Text($"Normal maps: {state.Completion.NormalBonusCount} / {AtlasCompletion.NormalBonusTarget}");
         ImGui.Text($"Unique maps: {state.Completion.UniqueBonusCount} / {AtlasCompletion.UniqueBonusTarget}");
-        ImGui.Text($"Maven:       {state.Maven.WitnessCount} / {MavenState.InvitationTarget}");
+        ImGui.Text($"Maven:       {FormatMavenLine(state.AtlasInvitation)}");
+    }
+
+    private static string FormatMavenLine(AtlasInvitation invitation)
+    {
+        if (invitation.QuestlineComplete)
+            return "Complete";
+
+        if (invitation.NextStageWitnessTarget is int target && invitation.NextStage is int stage)
+            return $"Stage {stage}/{AtlasInvitation.FinalStage}  {invitation.WitnessProgressCapped} / {target}";
+
+        return "-";
     }
 
     private static void PopStyles()

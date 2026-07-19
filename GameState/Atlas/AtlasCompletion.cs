@@ -1,4 +1,4 @@
-namespace AtlasHelper.GameState;
+namespace AtlasHelper.GameState.Atlas;
 
 public sealed record AtlasCompletion(
     int NormalBonusCount,

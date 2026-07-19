@@ -28,13 +28,17 @@ public sealed class GameStateReader
 
         _current = new AtlasSnapshot(
             DateTime.UtcNow,
-            VoidstoneReader.Read(gc),
-            CompletionReader.Read(gc),
-            MavenReader.Read(gc),
             TreeReader.Read(gc),
-            BeaconReader.Read(flags),
-            InvitationProgressReader.Read(gc, flags),
-            PinnacleCompletionReader.Read(flags));
+            CompletionReader.Read(gc),
+            VoidstoneReader.Read(gc),
+            EldritchReader.Read(flags),
+            OriginatorReader.Read(flags),
+            DecayedReader.Read(flags),
+            PinnacleBossesReader.Read(flags),
+            WitnessesReader.Read(gc),
+            AtlasInvitationReader.Read(gc, flags),
+            ThemedInvitationsReader.Read(flags),
+            BeaconReader.Read(flags));
 
         return _current;
     }

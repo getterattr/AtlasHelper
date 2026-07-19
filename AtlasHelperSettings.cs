@@ -78,8 +78,11 @@ public class AtlasOverlaySettings
     [Menu("Show", "Draw highlights over uncompleted atlas nodes while the atlas panel is open.")]
     public ToggleNode Show { get; set; } = new(true);
 
-    [Menu("Include Unique Maps", "Also highlight unique atlas nodes (10-cap bonus points).")]
-    public ToggleNode IncludeUniques { get; set; } = new(false);
+    [Menu("Include Unique Maps", "Highlight uncompleted unique atlas nodes (bonus caps at 10 uniques).")]
+    public ToggleNode IncludeUniques { get; set; } = new(true);
+
+    [Menu("Hide Uniques Past Cap", "Once 10 unique-map bonus completions are earned, stop highlighting the remaining uncompleted uniques (they no longer grant bonus points).")]
+    public ToggleNode HideUniquesPastCap { get; set; } = new(true);
 
     [Menu("Highlight Color", "Color of the outlined highlight over an uncompleted node.")]
     public ColorNode HighlightColor { get; set; } = new(new Color(255, 200, 60, 220));

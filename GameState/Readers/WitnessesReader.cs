@@ -1,20 +1,21 @@
 using System.Collections.Generic;
+using AtlasHelper.GameState.Maven;
 using ExileCore;
 
 namespace AtlasHelper.GameState.Readers;
 
-internal static class MavenReader
+internal static class WitnessesReader
 {
-    public static MavenState Read(GameController gc)
+    public static Witnesses Read(GameController gc)
     {
         var witnessed = gc.IngameState.Data.ServerData.MavenWitnessedAreas;
         if (witnessed == null)
-            return MavenState.Empty;
+            return Witnesses.Empty;
 
         var names = new List<string>(witnessed.Count);
         foreach (var area in witnessed)
             names.Add(area.Name);
 
-        return new MavenState(names);
+        return new Witnesses(names);
     }
 }

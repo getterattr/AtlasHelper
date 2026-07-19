@@ -3,7 +3,7 @@ using ExileCore.PoEMemory.Elements;
 using RectangleF = SharpDX.RectangleF;
 using Vector2 = System.Numerics.Vector2;
 
-namespace AtlasHelper.GameState;
+namespace AtlasHelper.GameState.Atlas;
 
 /// Projects an atlas node's world coordinates (AtlasNode.PosX/PosY, kept in
 /// AtlasMapNode.Position) to on-screen pixels, tracking the atlas panel's pan

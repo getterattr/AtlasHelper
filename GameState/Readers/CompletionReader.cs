@@ -1,3 +1,4 @@
+using AtlasHelper.GameState.Atlas;
 using ExileCore;
 
 namespace AtlasHelper.GameState.Readers;

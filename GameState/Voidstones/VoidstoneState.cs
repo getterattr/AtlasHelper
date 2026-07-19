@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace AtlasHelper.GameState;
+namespace AtlasHelper.GameState.Voidstones;
 
 public enum AtlasCorner
 {
