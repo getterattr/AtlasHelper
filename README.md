@@ -52,6 +52,8 @@ Runtime state is split into modules under `GameState/`:
 - `Pinnacles/` - individual boss kills.
 - `Diagnostics/` - startup flag dump + snapshot health check for detecting broken readers after patch offset shifts.
 
+Business synthesis lives under `Services/` - stateless static classes composing `AtlasSnapshot` into higher-order values (phase inference, advisory line, rarity checks). See `Services/README.md`.
+
 UI surfaces live under `Ui/`, split by audience:
 
 - `Ui/Overlays/` - in-game surfaces rendered while the player is playing (`HudOverlay`, `AtlasOverlay`, future `BossPathArrow`).

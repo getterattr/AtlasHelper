@@ -12,7 +12,7 @@
 6. Read the current-state decisions under `.claude/docs/internal/decisions/` before proposing changes to scope, state model, or module structure:
    - `scope.md` - plugin is league-start only; do not add late-league features.
    - `state-model.md` - state is derived from game memory; only the standard `BaseSettingsPlugin` settings file persists user config.
-   - `gamestate.md` - all `GameController` reads live under `GameState/`; consumers bind to `AtlasSnapshot`; modules (`Atlas/`, `Voidstones/`, `Maven/`, `Pinnacles/`, `Diagnostics/`) group state and each fact lives in exactly one module.
+   - `gamestate.md` - all `GameController` reads live under `GameState/`; consumers bind to `AtlasSnapshot`; modules (`Atlas/`, `Voidstones/`, `Maven/`, `Pinnacles/`, `Diagnostics/`) group state and each fact lives in exactly one module. Business synthesis (Phase inference, Advisory line, rarity check) lives in `Services/` as stateless static classes consuming `AtlasSnapshot` - not in `GameState/`, not on records directly. See `Services/README.md`.
    - `read-pattern.md` - readers pull base catalogs from `Files.*` and overlay `ServerData.*`; `TreeReader` is the reference implementation; unresolved `QuestFlag` names are surfaced loudly by `AtlasQuestFlags.Validate` at plugin startup.
 7. Load relevant skills based on your task (skills live in `~/.claude/skills/` and load on demand):
    - `exileapi` - ExileApi API reference, lifecycle, performance rules

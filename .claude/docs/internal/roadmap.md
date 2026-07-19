@@ -31,9 +31,12 @@ Small, self-contained additions. Runs sit under `GameState/Readers/`, records un
 - **Map Device toggle state** - Maven Beacon on? Exarch influence enabled? Eater? Feeds Advisory when recommending the next map to open.
 
 ### 3. Business synthesis (blocked by 2, degrades gracefully without 1)
-- **Phase inference.** `Phase.From(AtlasSnapshot) -> PhaseId + reason`. Voidstones + bonus + chain state resolve to Phase 1-4. Reason is the trigger (e.g. "Eldritch not socketed").
-- **Advisory composer.** `Advisory.From(AtlasSnapshot, Phase) -> Advice`. Composes run-priority rules ([strategy.md#run-priority](strategy.md#run-priority)) into a single "▶ Run next" sentence. Falls back to "highest tier" when chain state is null.
-- **In-map advice.** Per-map "bother yes/no" derivation from current-map identity + drop state ([strategy.md#in-map-loop](strategy.md#in-map-loop)).
+Lives under `Services/` - stateless synthesis of `AtlasSnapshot` into higher-order domain values. See [`Services/README.md`](../../../Services/README.md) for the pattern. `Services/Phase.cs` is the reference implementation (currently a placeholder returning the default).
+
+- **Phase inference** (`Services/Phase.cs`). `Phase.From(AtlasSnapshot) -> PhaseInference` (PhaseId + reason). Voidstones + bonus + chain state resolve to Phase 1-4. Reason is the trigger (e.g. "Eldritch not socketed").
+- **Advisory composer** (`Services/Advisory.cs`, new). `Advisory.From(AtlasSnapshot) -> AdvisoryLine`. Composes run-priority rules ([strategy.md#run-priority](strategy.md#run-priority)) into a single "▶ Run next" sentence. Falls back to "highest tier" when chain state is null.
+- **In-map advice** (`Services/InMapAdvice.cs`, new). Per-map "bother yes/no" derivation from current-map identity + drop state ([strategy.md#in-map-loop](strategy.md#in-map-loop)).
+- **Rarity check** (`Services/Rarity.cs`, new). Given a current-area rarity + tier, does it satisfy the bonus completion rule per tier band ([strategy.md#rarity-rules](strategy.md#rarity-rules))?
 
 ### 4. Surfaces (consumes 3)
 UI lives under `Ui/`, split by audience: `Ui/Overlays/` for in-game surfaces the player sees while playing, `Ui/Panels/` for settings-panel content in the ExileApi menu. `Theme.cs` and `ImGuiHelpers.cs` sit at the `Ui/` root as shared utilities.
