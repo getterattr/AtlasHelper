@@ -12,9 +12,9 @@ namespace AtlasHelper.Ui.Overlays;
 // Phase-1 and Phase-2 render surface. Draws the shortest unlock path
 // from the current phase's voidstone corner outward to the completed
 // frontier (or nearest T1 if nothing is completed yet), routing through
-// strategy-required waypoints (both T11 bottom-left maps for Eldritch).
-// Rings on path nodes plus lines between consecutive nodes, one color
-// for now.
+// strategy-required waypoints (both boss-arena entry icons for
+// Eldritch). Rings on path nodes plus lines between consecutive nodes,
+// plus a small name+tier label per node.
 //
 // Direction: corner is the start, frontier is the destination. Player
 // plays the path in reverse (from their completed frontier walking out
@@ -25,10 +25,15 @@ namespace AtlasHelper.Ui.Overlays;
 // 4 render is out of scope for the demo.
 internal static class PathOverlay
 {
-    private const float NodeIconWorldSize = 60f;
-    private const float RingThickness = 3f;
-    private const float LineThickness = 3f;
+    // World-unit size for the ring around a path node. Atlas node icons
+    // render at ~22 world units per bridge inspection; 28 gives a ring
+    // that hugs the icon without occluding it.
+    private const float NodeRingWorldSize = 28f;
+    private const float RingThickness = 2f;
+    private const float LineThickness = 2f;
     private const int RingSegments = 32;
+    private const float LabelPixelOffset = 4f;
+    private const int LabelTextSize = 14;
 
     // Placeholder single color for the demo. Configurable later if needed.
     private static readonly Color PathColor = new(255, 200, 80, 220);
@@ -128,25 +133,80 @@ internal static class PathOverlay
 
     private static void RenderPath(Graphics graphics, AtlasPanel atlas, AtlasPath path)
     {
-        Vector2? previousCenter = null;
-
+        // First pass: project every node's center + ring radius. Skip
+        // nodes that fail projection (panel not open / canvas invalid).
+        var points = new List<(Vector2 Center, float Radius, AtlasMapNode Node)>(path.Nodes.Count);
         foreach (var node in path.Nodes)
         {
-            if (!AtlasProjection.TryGetIconRect(atlas, node.Position, NodeIconWorldSize, out var rect))
-            {
-                previousCenter = null;
+            if (!AtlasProjection.TryGetIconRect(atlas, node.Position, NodeRingWorldSize, out var rect))
                 continue;
-            }
 
             var center = new Vector2(rect.X + rect.Width * 0.5f, rect.Y + rect.Height * 0.5f);
             var radius = (rect.Width < rect.Height ? rect.Width : rect.Height) * 0.5f;
+            points.Add((center, radius, node));
+        }
 
+        if (points.Count == 0) return;
+
+        // Second pass: draw lines edge-to-edge (from ring perimeter to
+        // ring perimeter) so they visually connect the circles instead
+        // of passing through them.
+        for (var i = 1; i < points.Count; i++)
+        {
+            var (aCenter, aRadius, _) = points[i - 1];
+            var (bCenter, bRadius, _) = points[i];
+            var delta = bCenter - aCenter;
+            var dist = delta.Length();
+            if (dist < 1f) continue;
+            var direction = delta / dist;
+            var lineStart = aCenter + direction * aRadius;
+            var lineEnd = bCenter - direction * bRadius;
+            graphics.DrawLine(lineStart, lineEnd, LineThickness, PathColor);
+        }
+
+        // Third pass: rings + labels on top of the lines.
+        foreach (var (center, radius, node) in points)
+        {
             graphics.DrawCircle(center, radius, PathColor, RingThickness, RingSegments);
 
-            if (previousCenter.HasValue)
-                graphics.DrawLine(previousCenter.Value, center, LineThickness, PathColor);
+            var label = LabelFor(node);
+            if (label.Length == 0) continue;
 
-            previousCenter = center;
+            var labelPos = new Vector2(center.X, center.Y - radius - LabelPixelOffset - LabelTextSize);
+            graphics.DrawText(label, labelPos, PathColor, LabelTextSize);
         }
     }
+
+    private static string LabelFor(AtlasMapNode node) => node.Kind switch
+    {
+        AtlasNodeKind.NormalMap => $"{node.AreaName} ({node.BaseTier})",
+        AtlasNodeKind.UniqueMap => node.AreaName,
+        AtlasNodeKind.MemoryMap => node.AreaName,
+        AtlasNodeKind.PinnacleBoss => Prettify(node.AreaId),
+        AtlasNodeKind.VoidstoneSlot => VoidstoneLabel(node.AreaId),
+        _ => node.AreaName.Length > 0 ? node.AreaName : node.AreaId,
+    };
+
+    // Strip trailing "Boss" and split PascalCase for readability.
+    private static string Prettify(string id)
+    {
+        if (id.EndsWith("Boss")) id = id.Substring(0, id.Length - 4);
+        var sb = new System.Text.StringBuilder(id.Length + 4);
+        for (var i = 0; i < id.Length; i++)
+        {
+            if (i > 0 && char.IsUpper(id[i]) && !char.IsUpper(id[i - 1]))
+                sb.Append(' ');
+            sb.Append(id[i]);
+        }
+        return sb.ToString();
+    }
+
+    private static string VoidstoneLabel(string id) => id switch
+    {
+        "TangledWatchstoneSlotNode" => "Eldritch",
+        "CleansingFireWatchstoneSlotNode" => "Originator",
+        "ElderWatchstoneSlotNode" => "Decayed",
+        "MavenWatchstoneSlotNode" => "Ceremonial",
+        _ => "Voidstone",
+    };
 }

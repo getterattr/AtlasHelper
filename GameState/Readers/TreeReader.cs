@@ -23,10 +23,24 @@ internal static class TreeReader
         "MapWorldsTheatreOfLies",
     };
 
+    // Eagon's Threads of the Originator memory-thread maps. Same three
+    // entries as the memory-map subset of NonBonusAreaIds; kept as a
+    // dedicated set so the classifier and the bonus-filter can drift
+    // apart if the strategy changes (e.g. if bonus completion ever
+    // credits memory maps).
+    private static readonly HashSet<string> MemoryMapAreaIds = new()
+    {
+        "MapWorldsCourtyardOfWasting",
+        "MapWorldsChambersOfImpurity",
+        "MapWorldsTheatreOfLies",
+    };
+
     // Synthesis Cortex and Eagon's memory guardians use a distinct Area.Id
     // prefix (Synthesis_MapGuardianN) instead of MapWorlds*, so a prefix
     // check catches the whole family.
     private const string SynthesisAreaPrefix = "Synthesis_";
+
+    private const string VoidstoneSlotIdSuffix = "WatchstoneSlotNode";
 
     public static AtlasTree Read(GameController gc)
     {
@@ -91,6 +105,8 @@ internal static class TreeReader
                               && !NonBonusAreaIds.Contains(areaId)
                               && !areaId.StartsWith(SynthesisAreaPrefix);
 
+            var kind = Classify(entry, areaId, hasArea, isUnique);
+
             nodes.Add(new AtlasMapNode(
                 areaId,
                 entry.Area?.Name ?? string.Empty,
@@ -100,9 +116,37 @@ internal static class TreeReader
                 grantsBonus,
                 connectionIds,
                 completedIds.Contains(areaId),
-                bonusIds.Contains(areaId)));
+                bonusIds.Contains(areaId),
+                kind));
         }
 
         return new AtlasTree(nodes);
+    }
+
+    private static AtlasNodeKind Classify(
+        ExileCore.PoEMemory.MemoryObjects.AtlasNode entry,
+        string areaId,
+        bool hasArea,
+        bool isUnique)
+    {
+        if (areaId.StartsWith(SynthesisAreaPrefix))
+            return AtlasNodeKind.SynthesisNode;
+
+        if (MemoryMapAreaIds.Contains(areaId))
+            return AtlasNodeKind.MemoryMap;
+
+        if (isUnique)
+            return AtlasNodeKind.UniqueMap;
+
+        if (!hasArea && entry.BaseTier == 0 && areaId.EndsWith(VoidstoneSlotIdSuffix))
+            return AtlasNodeKind.VoidstoneSlot;
+
+        if (!hasArea && entry.BaseTier == 0)
+            return AtlasNodeKind.PinnacleBoss;
+
+        if (hasArea && entry.BaseTier > 0)
+            return AtlasNodeKind.NormalMap;
+
+        return AtlasNodeKind.Other;
     }
 }
