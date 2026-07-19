@@ -33,6 +33,8 @@ internal static class PathOverlay
     // Placeholder single color for the demo. Configurable later if needed.
     private static readonly Color PathColor = new(255, 200, 80, 220);
 
+    private static string? _lastDebugState;
+
     public static void Draw(
         Graphics graphics,
         AtlasHelperSettings settings,
@@ -40,21 +42,30 @@ internal static class PathOverlay
         AtlasSnapshot snapshot,
         AtlasObjectives objectives)
     {
-        if (!settings.AtlasOverlay.Show.Value) return;
-        if (atlas == null || !atlas.IsVisible) return;
+        if (!settings.AtlasOverlay.Show.Value) { DebugOnce("gate:Show=off"); return; }
+        if (atlas == null || !atlas.IsVisible) { DebugOnce("gate:atlas hidden"); return; }
 
         var phase = ResolvePhase(settings, snapshot);
-        if (phase != PhaseId.One && phase != PhaseId.Two) return;
+        if (phase != PhaseId.One && phase != PhaseId.Two) { DebugOnce($"gate:phase={phase}"); return; }
 
         var byId = BuildLookup(snapshot.Tree);
+        DebugOnce($"tree={snapshot.Tree.Nodes.Count} objectives:E={objectives.EldritchCornerId ?? "?"},A={objectives.EldritchWaypointA ?? "?"},B={objectives.EldritchWaypointB ?? "?"}");
 
         var path = phase == PhaseId.One
             ? ComputeEldritchPath(snapshot.Tree, byId, objectives)
             : ComputeOriginatorPath(snapshot.Tree, byId, objectives);
 
-        if (path.Length == 0) return;
+        if (path.Length == 0) { DebugOnce($"gate:path empty (phase={phase})"); return; }
 
+        DebugOnce($"render:path={path.Length}");
         RenderPath(graphics, atlas, path);
+    }
+
+    private static void DebugOnce(string state)
+    {
+        if (_lastDebugState == state) return;
+        _lastDebugState = state;
+        try { ExileCore.DebugWindow.LogMsg($"[PathOverlay] {state}"); } catch { }
     }
 
     private static PhaseId ResolvePhase(AtlasHelperSettings settings, AtlasSnapshot snapshot)

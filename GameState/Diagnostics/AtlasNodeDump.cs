@@ -36,7 +36,7 @@ internal sealed class AtlasNodeDump
         if (atlasNodes == null || atlasNodes.Count == 0) return;
 
         var sb = new StringBuilder();
-        sb.AppendLine("id\tarea_id\tarea_name\ttier\tx\ty\tis_unique\tconnections");
+        sb.AppendLine("id\tarea_id\tarea_name\ttier\tx\ty\tis_unique\tconnected_ids");
         foreach (var entry in atlasNodes)
         {
             if (entry == null) continue;
@@ -47,7 +47,17 @@ internal sealed class AtlasNodeDump
             var x = entry.PosX;
             var y = entry.PosY;
             var isUnique = entry.IsUniqueMap;
-            var connCount = entry.Connections?.Count ?? 0;
+            var connections = string.Empty;
+            if (entry.Connections != null)
+            {
+                var connIds = new System.Collections.Generic.List<string>();
+                foreach (var neighbour in entry.Connections)
+                {
+                    var connId = neighbour?.Area?.Id ?? neighbour?.Id;
+                    if (!string.IsNullOrEmpty(connId)) connIds.Add(connId);
+                }
+                connections = string.Join(",", connIds);
+            }
 
             sb.Append(id).Append('\t')
               .Append(areaId).Append('\t')
@@ -56,7 +66,7 @@ internal sealed class AtlasNodeDump
               .Append(x).Append('\t')
               .Append(y).Append('\t')
               .Append(isUnique).Append('\t')
-              .Append(connCount).Append('\n');
+              .Append(connections).Append('\n');
         }
 
         var path = Path.Combine(_dumpDirectory, "AtlasNodeDump.tsv");

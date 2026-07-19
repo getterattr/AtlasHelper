@@ -67,8 +67,18 @@ internal static class TreeReader
             if (entry.Connections != null)
             {
                 foreach (var neighbour in entry.Connections)
-                    if (neighbour?.Area?.Id is { } neighbourId)
+                {
+                    // Fall back to entry.Id for neighbours with no Area
+                    // (voidstone corner slots, pinnacle boss atlas
+                    // icons). Without this fallback the graph loses
+                    // every edge that terminates at an Area-less node -
+                    // e.g. HauntedMansion -> BlackStarBoss disappears,
+                    // making the Eldritch Phase-1 waypoints unreachable
+                    // via BFS from the Tangled corner.
+                    var neighbourId = neighbour?.Area?.Id ?? neighbour?.Id;
+                    if (!string.IsNullOrEmpty(neighbourId))
                         connectionIds.Add(neighbourId);
+                }
             }
 
             var hasArea = entry.Area != null;
