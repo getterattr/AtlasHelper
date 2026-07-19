@@ -18,8 +18,7 @@ internal sealed class FlagDiagnostics
     private readonly Action<string> _logInfo;
     private readonly Action<string> _logError;
 
-    private bool _dumped;
-    private bool _validated;
+    private bool _ran;
 
     public FlagDiagnostics(string dumpDirectory, Action<string> logInfo, Action<string> logError)
     {
@@ -30,16 +29,8 @@ internal sealed class FlagDiagnostics
 
     public void RunOnce(GameController gc)
     {
-        if (gc?.IngameState?.Data?.ServerData?.QuestFlags == null)
-            return;
-
-        DumpOnce(gc);
-        ValidateOnce(gc);
-    }
-
-    private void DumpOnce(GameController gc)
-    {
-        if (_dumped) return;
+        if (_ran) return;
+        if (gc?.IngameState?.Data?.ServerData?.QuestFlags == null) return;
 
         var flags = QuestFlagLookup.Build(gc);
         var trueFlags = flags.Keys
@@ -56,19 +47,12 @@ internal sealed class FlagDiagnostics
         File.WriteAllText(path, sb.ToString());
         _logInfo($"[AtlasHelper] Dumped {trueFlags.Count} true quest flags to {path}");
 
-        _dumped = true;
-    }
-
-    private void ValidateOnce(GameController gc)
-    {
-        if (_validated) return;
-
         var result = AtlasQuestFlags.Validate(gc);
         if (result.Unresolved.Count == 0)
             _logInfo($"[AtlasHelper] Quest flag catalog: {result.Total}/{result.Total} resolved.");
         else
             _logError($"[AtlasHelper] Quest flag catalog: {result.Unresolved.Count} unresolved of {result.Total}. Missing: {string.Join(", ", result.Unresolved)}");
 
-        _validated = true;
+        _ran = true;
     }
 }

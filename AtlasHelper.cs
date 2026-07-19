@@ -1,3 +1,4 @@
+using System;
 using AtlasHelper.GameState;
 using AtlasHelper.GameState.Diagnostics;
 using AtlasHelper.Ui;
@@ -9,7 +10,8 @@ namespace AtlasHelper;
 public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
     private readonly GameStateReader _state = new();
-    private FlagDiagnostics _diagnostics = null!;
+    private FlagDiagnostics _flagDiagnostics = null!;
+    private SnapshotHealth _snapshotHealth = null!;
 
     public AtlasSnapshot State => _state.Current;
 
@@ -18,8 +20,12 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         Settings.Overview.DrawDelegate = () => OverviewPanel.Draw(Settings);
         Settings.ConfigurationHeader.DrawDelegate = OverviewPanel.DrawConfigurationHeader;
         Settings.Progression.Reference.DrawDelegate = ProgressionReferencePanel.Draw;
-        _diagnostics = new FlagDiagnostics(
+        _flagDiagnostics = new FlagDiagnostics(
             DirectoryFullName,
+            msg => LogMessage(msg, 10f),
+            msg => LogError(msg, 30f));
+        _snapshotHealth = new SnapshotHealth(
+            TimeSpan.FromSeconds(30),
             msg => LogMessage(msg, 10f),
             msg => LogError(msg, 30f));
         return true;
@@ -33,7 +39,8 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     public override Job Tick()
     {
         _state.RefreshIfStale(GameController);
-        _diagnostics.RunOnce(GameController);
+        _flagDiagnostics.RunOnce(GameController);
+        _snapshotHealth.CheckOnce(_state.Current);
         return null;
     }
 
