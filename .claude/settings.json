@@ -4,6 +4,7 @@
       "Bash(claude mcp *)",
       "Bash(dotnet build *)",
       "mcp__exileapi__get_bridge_status",
+      "mcp__exileapi__get_area",
       "mcp__exileapi__get_player",
       "mcp__exileapi__get_all",
       "mcp__exileapi__eval_path",

@@ -11,7 +11,7 @@ The plugin was scoped from a single reference: definitive/Cyclone's 3.29 "How to
 3. 100% bonus completion
 4. Final voidstones (Shaper/Elder, top-right and bottom-right)
 
-Everything in the plugin is downstream of this strategy. See [glossary](glossary.md) for the canonical terms.
+Everything in the plugin is downstream of this strategy. See [glossary](glossary.md) for the canonical terms and [questline](questline.md) for the wiki-sourced facts about voidstones, Maven progression tiers, and endgame invitations.
 
 ## Decisions
 
