@@ -12,16 +12,26 @@ public class AtlasHelperSettings : ISettings
     [Menu("Enabled", "Enable or disable the AtlasHelper plugin.")]
     public ToggleNode Enable { get; set; } = new(false);
 
+    [Menu("Overview", "Strategy summary and a snapshot of your current configuration.")]
+    [JsonIgnore]
+    public CustomNode Overview { get; set; } = new();
+
+    [Menu("Progression", "Which progression phase to display and how you plan to acquire the final voidstones.")]
+    public ProgressionSettings Progression { get; set; } = new();
+
+    [Menu("HUD Overlay", "The always-on HUD panel showing Phase, voidstones, completion, and chain progress.")]
+    public HudOverlaySettings Hud { get; set; } = new();
+}
+
+[Submenu(CollapsedByDefault = true)]
+public class ProgressionSettings
+{
     [Menu("Phase Override", "Force the current progression phase. Auto derives it from live game state.")]
     public ListNode PhaseOverride { get; set; } = new()
     {
         Values = new List<string> { "Auto", "Phase 1", "Phase 2", "Phase 3", "Phase 4" },
         Value = "Auto",
     };
-
-    [Menu("Phase Guide", "What each phase means and when it starts. Read this before overriding.")]
-    [JsonIgnore]
-    public CustomNode PhaseGuide { get; set; } = new();
 
     [Menu(
         "Strategy",
@@ -33,12 +43,9 @@ public class AtlasHelperSettings : ISettings
         Values = new List<string> { "Destructive Play", "Exarch Altars" },
         Value = "Destructive Play",
     };
-
-    [Menu("HUD Overlay", "Configure the always-on HUD panel showing Phase, voidstones, completion, and chain progress.")]
-    public HudOverlaySettings Hud { get; set; } = new();
 }
 
-[Submenu(CollapsedByDefault = false)]
+[Submenu(CollapsedByDefault = true)]
 public class HudOverlaySettings
 {
     [Menu("Show", "Show or hide the HUD panel.")]
