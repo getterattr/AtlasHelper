@@ -2,6 +2,7 @@ using System;
 using AtlasHelper.GameState.Atlas;
 using AtlasHelper.GameState.Maven;
 using AtlasHelper.GameState.Pinnacles;
+using AtlasHelper.GameState.Session;
 using AtlasHelper.GameState.Voidstones;
 
 namespace AtlasHelper.GameState;
@@ -21,7 +22,9 @@ public sealed record AtlasSnapshot(
     // Maven-owned state
     Witnesses Witnesses,
     AtlasInvitation AtlasInvitation,
-    ThemedInvitations ThemedInvitations)
+    ThemedInvitations ThemedInvitations,
+    // Transient session context (HUD variant switch, InMapAdvice gate)
+    SessionContext Session)
 {
     public static AtlasSnapshot Empty { get; } = new(
         DateTime.MinValue,
@@ -34,5 +37,6 @@ public sealed record AtlasSnapshot(
         PinnacleBosses.Empty,
         Witnesses.Empty,
         AtlasInvitation.Empty,
-        ThemedInvitations.Empty);
+        ThemedInvitations.Empty,
+        SessionContext.Empty);
 }

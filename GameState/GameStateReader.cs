@@ -37,7 +37,8 @@ public sealed class GameStateReader
             PinnacleBossesReader.Read(flags),
             WitnessesReader.Read(gc),
             AtlasInvitationReader.Read(gc, flags),
-            ThemedInvitationsReader.Read(flags));
+            ThemedInvitationsReader.Read(flags),
+            SessionReader.Read(gc));
 
         return _current;
     }

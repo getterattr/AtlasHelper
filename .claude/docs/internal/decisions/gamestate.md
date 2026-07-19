@@ -23,6 +23,7 @@ Per-section readers live in `GameState/Readers/`. One static class per section, 
 | `Voidstones/` | Physical slot state (`VoidstoneState`) plus per-corner **chain progression** records (`Eldritch`, `Originator`, `Decayed`). |
 | `Maven/` | Everything Maven-owned: `Witnesses` (list), `AtlasInvitation` (the 5-stage ladder, including `BeaconAcquired`), `ThemedInvitations` (Formed / Twisted / Elderslayers / Forgotten / Remembered / Feared). |
 | `Pinnacles/` | Individual pinnacle boss kills - `PinnacleBosses` (Maven, Shaper, Elder, SearingExarch, EaterOfWorlds, IncarnationOfDread, Sirus). |
+| `Session/` | Transient session context that is not owned by any atlas-domain module: `SessionContext.IsInMap` (drives HUD in-town vs in-map variant). Kept deliberately small - future session-scoped state (current-area object, party state) belongs here rather than sprawling into `Atlas/`. |
 | `Diagnostics/` | Startup and health diagnostics (`FlagDiagnostics`, `SnapshotHealth`). Not a state section - runs alongside the snapshot pipeline. |
 
 `AtlasQuestFlags` sits at the top of `GameState/` (not under `Readers/`). It is a domain catalog mapping game-flag strings to logical progression events, grouped to mirror the modules.
