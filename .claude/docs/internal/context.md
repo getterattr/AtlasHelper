@@ -74,9 +74,9 @@ Live tracker for the values the plugin needs to read from game memory.
 | Atlas map-tree node data (name, tier, connections, position) | Resolved | `TreeReader` | Reads `Files.AtlasNodes` catalog and overlays `ServerData.CompletedNodes` / `BonusCompletedNodes`. Reference implementation. |
 | Post-patch offset breakage detection | Resolved | `SnapshotHealth` | Warm-up + Empty-section report loudly identifies broken readers after a game patch shifts memory offsets. |
 
-## Implementation order (post-spike)
+## Implementation order
 
-HUD panel first, then atlas map-tree overlay, then in-map boss-path arrow. Each is independently useful; if the schedule slips, the earlier surfaces still ship value.
+See [roadmap.md](roadmap.md) - workstream breakdown, dependencies, and current position.
 
 ## Reference plugins
 

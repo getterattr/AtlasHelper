@@ -38,6 +38,7 @@ An ExileApi overlay plugin for Path of Exile. Guides league-start atlas progress
 Design docs live in `.claude/docs/internal/`:
 
 - `context.md` - narrative design record, reader audit, blocking spikes.
+- `roadmap.md` - current-state view of what's built, what's left, workstream order.
 - `glossary.md` - canonical domain vocabulary (Phase, Voidstone, Corner, Quest Chain, ...).
 - `questline.md` - wiki-sourced facts about voidstones, Maven ladder, endgame invitations.
 - `strategy.md` - tactical business rules distilled from the league-start guide.

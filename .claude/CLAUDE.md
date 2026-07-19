@@ -5,7 +5,7 @@
 ## Quick Start
 
 1. Read `README.md` for what this plugin does and how it's wired.
-2. Read `.claude/docs/internal/context.md` for the narrative design record (what was decided, what was rejected, what the blocking spikes are).
+2. Read `.claude/docs/internal/context.md` for the narrative design record (what was decided, what was rejected, what the blocking spikes are). Read `.claude/docs/internal/roadmap.md` for the current-state view of what's built, what's left, and the workstream order.
 3. Read `.claude/docs/internal/glossary.md` before using any domain term (Phase, Voidstone, Corner, Quest Chain, Bonus Completion, Run Priority).
 4. Load `.claude/docs/internal/questline.md` whenever discussing atlas progression, voidstone identity, Maven mechanics, or endgame invitations. It is the source of truth for wiki-sourced game facts (voidstone -> boss mapping, Maven Beacon -> 3/4/5/6/10-way -> Splinters -> Writ -> Ceremonial chain, endgame invitation catalog).
 5. Load `.claude/docs/internal/strategy.md` whenever advising on Phase rules, run priority, in-map loop, Eagon steering, or rarity choices. It encodes the tactical business logic distilled from definitive/Cyclone's league-start guide.
