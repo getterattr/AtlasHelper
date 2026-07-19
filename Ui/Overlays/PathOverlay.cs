@@ -4,6 +4,7 @@ using AtlasHelper.GameState;
 using AtlasHelper.GameState.Atlas;
 using AtlasHelper.Services;
 using ExileCore.PoEMemory.Elements;
+using ExileCore.Shared.Enums;
 using Color = SharpDX.Color;
 using Graphics = ExileCore.Graphics;
 
@@ -26,17 +27,24 @@ namespace AtlasHelper.Ui.Overlays;
 internal static class PathOverlay
 {
     // World-unit size for the ring around a path node. Atlas node icons
-    // render at ~22 world units per bridge inspection; 28 gives a ring
-    // that hugs the icon without occluding it.
-    private const float NodeRingWorldSize = 28f;
+    // render at ~22 world units per bridge inspection; 14 puts the ring
+    // just inside the icon boundary so the label centered on the node
+    // stays legible without the ring competing for visual space.
+    private const float NodeRingWorldSize = 14f;
     private const float RingThickness = 2f;
     private const float LineThickness = 2f;
     private const int RingSegments = 32;
-    private const float LabelPixelOffset = 4f;
-    private const int LabelTextSize = 14;
 
-    // Placeholder single color for the demo. Configurable later if needed.
-    private static readonly Color PathColor = new(255, 200, 80, 220);
+    // Path color used for rings, connecting lines, and the label text.
+    private static readonly Color PathColor = new(255, 200, 80, 235);
+
+    // Label background - near-opaque dark warm tone so the gold text
+    // reads cleanly over any atlas backdrop.
+    private static readonly Color LabelBackground = new(20, 15, 10, 220);
+
+    // Slightly warmer off-white for the label text; higher contrast
+    // than the ring color while keeping the gold-plated feel.
+    private static readonly Color LabelText = new(255, 240, 210, 255);
 
     public static void Draw(
         Graphics graphics,
@@ -164,16 +172,22 @@ internal static class PathOverlay
             graphics.DrawLine(lineStart, lineEnd, LineThickness, PathColor);
         }
 
-        // Third pass: rings + labels on top of the lines.
-        foreach (var (center, radius, node) in points)
-        {
+        // Third pass: rings under labels.
+        foreach (var (center, radius, _) in points)
             graphics.DrawCircle(center, radius, PathColor, RingThickness, RingSegments);
 
-            var label = LabelFor(node);
-            if (label.Length == 0) continue;
+        // Fourth pass: labels centered on each node, with background
+        // panel drawn behind them for legibility over the atlas art.
+        foreach (var (center, _, node) in points)
+        {
+            var text = LabelFor(node);
+            if (text.Length == 0) continue;
 
-            var labelPos = new Vector2(center.X, center.Y - radius - LabelPixelOffset - LabelTextSize);
-            graphics.DrawText(label, labelPos, PathColor, LabelTextSize);
+            var size = graphics.MeasureText(text);
+            var pos = new Vector2(
+                center.X - size.X * 0.5f,
+                center.Y - size.Y * 0.5f);
+            graphics.DrawTextWithBackground(text, pos, LabelText, FontAlign.Left, LabelBackground);
         }
     }
 
