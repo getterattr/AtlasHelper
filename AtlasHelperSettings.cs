@@ -17,6 +17,10 @@ public class AtlasHelperSettings : ISettings
     [JsonIgnore]
     public CustomNode Overview { get; set; } = new();
 
+    [Menu("Configuration")]
+    [JsonIgnore]
+    public CustomNode ConfigurationHeader { get; set; } = new();
+
     [Menu("Progression", "Which progression phase to display and how you plan to acquire the final voidstones.")]
     public ProgressionSettings Progression { get; set; } = new();
 

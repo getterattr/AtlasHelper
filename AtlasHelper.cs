@@ -23,6 +23,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     public override bool Initialise()
     {
         Settings.Overview.DrawDelegate = () => OverviewPanel.Draw(Settings);
+        Settings.ConfigurationHeader.DrawDelegate = OverviewPanel.DrawConfigurationHeader;
         Settings.Progression.Help.Reference.DrawDelegate = ProgressionReferencePanel.Draw;
         return true;
     }
