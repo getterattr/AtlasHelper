@@ -216,15 +216,23 @@ public static class Pathfinding
         return count;
     }
 
-    // Multi-source BFS: start from every node matching `isSource` in
-    // parallel, return the shortest hop chain to the first node matching
-    // `isDestination`. Path is [source, ..., destination] in walk order.
+    // Multi-source shortest-path search: start from every node matching
+    // `isSource` in parallel, return the fewest-hops chain to the first
+    // node matching `isDestination`. Path is [source, ..., destination]
+    // in walk order.
+    //
+    // Compound cost = HopMultiplier * hop_count + sum_of_tiers_entered.
+    // HopMultiplier (10_000) dominates atlas-scale tier sums (~166 nodes
+    // * 16 max tier), so hop count is the primary sort and tier sum is
+    // the tiebreaker among equally-short paths. This means among two
+    // equally-short unlock chains the search prefers the one that walks
+    // through lower-tier maps - a T11 + T11 chain wins over T13 + T14.
     //
     // Fits the "shortest unlock chain to an objective" question - pass
-    // `n => n.Completed || n.BaseTier == 1` for the source predicate and
-    // an objective id for the destination. Any already-completed node
-    // becomes a valid jumping-off point, so the algorithm exploits high-
-    // tier progress rather than always walking back to T1.
+    // `n => n.Completed || n.BaseTier == 1` for the source predicate
+    // and an objective id for the destination. Any already-completed
+    // node becomes a valid jumping-off point, so the algorithm exploits
+    // high-tier progress rather than always walking back to T1.
     //
     // Returns AtlasPath.Empty if no source exists in the tree or if no
     // source can reach the destination.
@@ -233,27 +241,31 @@ public static class Pathfinding
         Func<AtlasMapNode, bool> isSource,
         Func<AtlasMapNode, bool> isDestination)
     {
+        const long HopMultiplier = 10_000L;
+
         var byId = new Dictionary<string, AtlasMapNode>(tree.Nodes.Count);
         foreach (var node in tree.Nodes)
             byId[node.AreaId] = node;
 
-        var queue = new Queue<AtlasMapNode>();
-        var visited = new HashSet<string>();
+        var cost = new Dictionary<string, long>();
         var previous = new Dictionary<string, AtlasMapNode>();
+        var pq = new PriorityQueue<AtlasMapNode, long>();
 
         foreach (var node in tree.Nodes)
         {
             if (!isSource(node)) continue;
-            if (!visited.Add(node.AreaId)) continue;
-            queue.Enqueue(node);
+            if (cost.ContainsKey(node.AreaId)) continue;
+            cost[node.AreaId] = 0L;
+            pq.Enqueue(node, 0L);
         }
 
-        if (queue.Count == 0) return AtlasPath.Empty;
+        if (pq.Count == 0) return AtlasPath.Empty;
 
         AtlasMapNode? destination = null;
-        while (queue.Count > 0)
+        while (pq.TryDequeue(out var current, out var currentCost))
         {
-            var current = queue.Dequeue();
+            // Stale queue entry from a superseded relaxation.
+            if (currentCost > cost[current.AreaId]) continue;
 
             if (isDestination(current))
             {
@@ -264,10 +276,13 @@ public static class Pathfinding
             foreach (var neighborId in current.ConnectedAreaIds)
             {
                 if (!byId.TryGetValue(neighborId, out var neighbor)) continue;
-                if (!visited.Add(neighborId)) continue;
 
+                var newCost = currentCost + HopMultiplier + neighbor.BaseTier;
+                if (cost.TryGetValue(neighborId, out var existing) && newCost >= existing) continue;
+
+                cost[neighborId] = newCost;
                 previous[neighborId] = current;
-                queue.Enqueue(neighbor);
+                pq.Enqueue(neighbor, newCost);
             }
         }
 
