@@ -12,9 +12,9 @@ namespace AtlasHelper.Ui.Overlays;
 // Phase-1 and Phase-2 render surface. Draws the shortest unlock path
 // from the current phase's voidstone corner outward to the completed
 // frontier (or nearest T1 if nothing is completed yet), routing through
-// strategy-required waypoints (Polaric Void + Seething Chime for
-// Eldritch). Rings on path nodes plus lines between consecutive nodes,
-// one color for now.
+// strategy-required waypoints (both T11 bottom-left maps for Eldritch).
+// Rings on path nodes plus lines between consecutive nodes, one color
+// for now.
 //
 // Direction: corner is the start, frontier is the destination. Player
 // plays the path in reverse (from their completed frontier walking out
@@ -37,7 +37,8 @@ internal static class PathOverlay
         Graphics graphics,
         AtlasHelperSettings settings,
         AtlasPanel? atlas,
-        AtlasSnapshot snapshot)
+        AtlasSnapshot snapshot,
+        AtlasObjectives objectives)
     {
         if (!settings.AtlasOverlay.Show.Value) return;
         if (atlas == null || !atlas.IsVisible) return;
@@ -48,8 +49,8 @@ internal static class PathOverlay
         var byId = BuildLookup(snapshot.Tree);
 
         var path = phase == PhaseId.One
-            ? ComputeEldritchPath(snapshot.Tree, byId)
-            : ComputeOriginatorPath(snapshot.Tree, byId);
+            ? ComputeEldritchPath(snapshot.Tree, byId, objectives)
+            : ComputeOriginatorPath(snapshot.Tree, byId, objectives);
 
         if (path.Length == 0) return;
 
@@ -76,20 +77,23 @@ internal static class PathOverlay
         return d;
     }
 
-    private static AtlasPath ComputeEldritchPath(AtlasTree tree, Dictionary<string, AtlasMapNode> byId)
+    private static AtlasPath ComputeEldritchPath(
+        AtlasTree tree,
+        Dictionary<string, AtlasMapNode> byId,
+        AtlasObjectives objectives)
     {
-        var cornerId = AtlasObjectives.Voidstones.Eldritch.CornerSlot;
+        var cornerId = objectives.EldritchCornerId;
+        var waypointA = objectives.EldritchWaypointA;
+        var waypointB = objectives.EldritchWaypointB;
+        if (string.IsNullOrEmpty(cornerId)) return AtlasPath.Empty;
+        if (string.IsNullOrEmpty(waypointA)) return AtlasPath.Empty;
+        if (string.IsNullOrEmpty(waypointB)) return AtlasPath.Empty;
         if (!byId.ContainsKey(cornerId)) return AtlasPath.Empty;
+        if (!byId.ContainsKey(waypointA)) return AtlasPath.Empty;
+        if (!byId.ContainsKey(waypointB)) return AtlasPath.Empty;
 
-        var waypoints = new[]
-        {
-            AtlasObjectives.Voidstones.Eldritch.PolaricVoid,
-            AtlasObjectives.Voidstones.Eldritch.SeethingChime,
-        };
-        foreach (var w in waypoints)
-            if (!byId.ContainsKey(w)) return AtlasPath.Empty;
-
-        var routeThroughWaypoints = Pathfinding.FindMultiTargetPath(tree, cornerId, waypoints);
+        var routeThroughWaypoints = Pathfinding.FindMultiTargetPath(
+            tree, cornerId, new[] { waypointA, waypointB });
         if (routeThroughWaypoints.Length == 0) return AtlasPath.Empty;
 
         var tailStart = routeThroughWaypoints.Destination!.AreaId;
@@ -98,9 +102,13 @@ internal static class PathOverlay
         return Concatenate(routeThroughWaypoints, tail);
     }
 
-    private static AtlasPath ComputeOriginatorPath(AtlasTree tree, Dictionary<string, AtlasMapNode> byId)
+    private static AtlasPath ComputeOriginatorPath(
+        AtlasTree tree,
+        Dictionary<string, AtlasMapNode> byId,
+        AtlasObjectives objectives)
     {
-        var cornerId = AtlasObjectives.Voidstones.Originator.CornerSlot;
+        var cornerId = objectives.OriginatorCornerId;
+        if (string.IsNullOrEmpty(cornerId)) return AtlasPath.Empty;
         if (!byId.ContainsKey(cornerId)) return AtlasPath.Empty;
 
         return Pathfinding.FindPath(tree, cornerId, n => n.Completed || n.BaseTier == 1);

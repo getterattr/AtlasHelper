@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using AtlasHelper.GameState;
 using AtlasHelper.GameState.Diagnostics;
 using AtlasHelper.Ui.Overlays;
@@ -14,6 +15,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
     private FlagDiagnostics _flagDiagnostics;
     private SnapshotHealth _snapshotHealth;
     private AtlasNodeDump _atlasNodeDump;
+    private AtlasObjectives _atlasObjectives = AtlasObjectives.Empty;
 
     public AtlasHelper()
     {
@@ -28,20 +30,27 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         Settings.ConfigurationHeader.DrawDelegate = OverviewPanel.DrawConfigurationHeader;
         Settings.Progression.Reference.DrawDelegate = ProgressionReferencePanel.Draw;
 
-        _flagDiagnostics = new FlagDiagnostics(
-            DirectoryFullName,
-            msg => LogMessage(msg, 10f),
-            msg => LogError(msg, 30f));
+        var errorLogPath = Path.Combine(DirectoryFullName, "Errors.txt");
+        void LogInfo(string msg) => LogMessage(msg, 10f);
+        void LogErr(string msg)
+        {
+            LogError(msg, 30f);
+            AppendErrorFile(errorLogPath, msg);
+        }
 
-        _snapshotHealth = new SnapshotHealth(
-            TimeSpan.FromSeconds(30),
-            msg => LogMessage(msg, 10f),
-            msg => LogError(msg, 30f));
+        _flagDiagnostics = new FlagDiagnostics(DirectoryFullName, LogInfo, LogErr);
+        _snapshotHealth = new SnapshotHealth(TimeSpan.FromSeconds(30), LogInfo, LogErr);
+        _atlasNodeDump = new AtlasNodeDump(DirectoryFullName, LogInfo, LogErr);
+    }
 
-        _atlasNodeDump = new AtlasNodeDump(
-            DirectoryFullName,
-            msg => LogMessage(msg, 10f),
-            msg => LogError(msg, 30f));
+    private static void AppendErrorFile(string path, string message)
+    {
+        try
+        {
+            File.AppendAllText(path, $"{DateTime.UtcNow:O}\t{message}{Environment.NewLine}");
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
     }
 
     public override void OnClose()
@@ -63,6 +72,8 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         _flagDiagnostics?.RunOnce(GameController);
         _snapshotHealth?.CheckOnce(_state.Current);
         _atlasNodeDump?.RunOnce(GameController);
+        if (_atlasObjectives == AtlasObjectives.Empty)
+            _atlasObjectives = AtlasObjectives.Resolve(GameController);
         return null;
     }
 
@@ -72,7 +83,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
             Settings.Hud.Show.Value = !Settings.Hud.Show.Value;
 
         var atlas = GameController?.IngameState?.IngameUi?.Atlas;
-        PathOverlay.Draw(Graphics, Settings, atlas, _state.Current);
+        PathOverlay.Draw(Graphics, Settings, atlas, _state.Current, _atlasObjectives);
         AtlasOverlay.Draw(Graphics, Settings, atlas, _state.Current);
 
         if (!Settings.Hud.Show.Value)

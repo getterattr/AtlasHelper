@@ -20,7 +20,7 @@ Aligned with the ordered voidstone list above. See [glossary.md#phase](glossary.
 Goal: reach T16 in the bottom-left corner, complete Exarch and Eater chains, socket Eldritch.
 
 Two sequential steps:
-1. **Rush T1 -> T11.** Highest tier available each map, taking bonus completion along the way. Unlock two T11 nodes so both the Polaric Void (Exarch T11) and the Seething Chime (Eater T11) invitations are runnable.
+1. **Rush T1 -> T11.** Highest tier available each map, taking bonus completion along the way. Unlock two T11 atlas nodes in the bottom-left quadrant so both the Polaric Invitation (from any Exarch-influenced T11 boss) and the Screaming Invitation (from any Eater-influenced T11 boss) are runnable. Per the 3.29 atlas layout the bottom-left T11s are **Siege** and **Haunted Mansion**; either can carry either influence.
 2. **T11 -> T16 questline sprint.** Skip second-pass yellows. Run one map per red tier (T11, T12, T13, T14, T15, T16) *magic-rolled* to progress the Exarch and Eater chains. Bonus is intentionally deferred - Phase 3's tier-boost re-runs pay it back.
 
 ### Phase 2 - Ten-way Maven and second voidstone (Originator)
@@ -80,7 +80,7 @@ Reaching a voidstone corner slot to socket the voidstone requires unlocking a pa
 - **Destination**: nearest node with `Completed = true`. Fallback when no maps are completed yet is TBD.
 - **Play order**: reverse the returned path - from the completed frontier walking outward to the corner.
 
-For Phase 1 specifically, the strategy names two required T11 intermediate stops in the bottom-left quadrant - **Polaric Void** (Exarch T11) and **Seething Chime** (Eater T11) - because the Exarch and Eater questlines cannot progress without both invitation types dropping.
+For Phase 1 specifically, both T11 nodes in the bottom-left quadrant (**Siege** and **Haunted Mansion** per the 3.29 layout) are required intermediate stops. The Exarch and Eater questlines cannot progress without both invitation types dropping - one from a T11 Exarch-influenced boss (Polaric Invitation), one from a T11 Eater-influenced boss (Screaming Invitation).
 
 ## Rarity rules
 

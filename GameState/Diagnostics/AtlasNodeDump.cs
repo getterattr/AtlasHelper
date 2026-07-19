@@ -6,13 +6,12 @@ using ExileCore;
 namespace AtlasHelper.GameState.Diagnostics;
 
 // Startup-once dump of every atlas node from Files.AtlasNodes to a tsv.
-// Provides the source of truth for pinning AtlasObjectives placeholders
-// (Polaric Void, Seething Chime, the four corner slots) - grep the
-// dump for a display name, transcribe the id back into
-// AtlasObjectives.cs.
+// Provides the source of truth for verifying AtlasObjectives.Resolve
+// found the right nodes - grep the tsv for area_name or the corner
+// slot id pattern.
 //
-// Also cross-references the AtlasObjectives catalog against the
-// runtime set and surfaces unresolved ids loudly per
+// Also cross-references the resolved AtlasObjectives against expected
+// coverage and surfaces unresolved ids loudly per
 // decisions/read-pattern.md.
 internal sealed class AtlasNodeDump
 {
@@ -64,11 +63,18 @@ internal sealed class AtlasNodeDump
         File.WriteAllText(path, sb.ToString());
         _logInfo($"[AtlasHelper] Dumped {atlasNodes.Count} atlas nodes to {path}");
 
-        var result = AtlasObjectives.Validate(gc);
-        if (result.Unresolved.Count == 0)
-            _logInfo($"[AtlasHelper] Atlas objectives catalog: {result.Total}/{result.Total} resolved.");
+        var objectives = AtlasObjectives.Resolve(gc);
+        var unresolved = new System.Collections.Generic.List<string>();
+        var totalCount = 0;
+        foreach (var (label, resolvedId) in objectives.All())
+        {
+            totalCount++;
+            if (string.IsNullOrEmpty(resolvedId)) unresolved.Add(label);
+        }
+        if (unresolved.Count == 0)
+            _logInfo($"[AtlasHelper] Atlas objectives: {totalCount}/{totalCount} resolved.");
         else
-            _logError($"[AtlasHelper] Atlas objectives catalog: {result.Unresolved.Count} unresolved of {result.Total}. Missing: {string.Join(", ", result.Unresolved)}");
+            _logError($"[AtlasHelper] Atlas objectives: {unresolved.Count} unresolved of {totalCount}. Missing: {string.Join(", ", unresolved)}");
 
         _ran = true;
     }
