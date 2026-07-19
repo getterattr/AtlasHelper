@@ -36,21 +36,21 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
         ImGui.SetNextWindowPos(new Vector2(20, 120), ImGuiCond.FirstUseEver);
 
         ImGui.PushStyleColor(ImGuiCol.WindowBg, ToImGuiColor(hud.BackgroundColor.Value));
-        ImGui.PushStyleColor(ImGuiCol.Border, ToImGuiColor(hud.BorderColor.Value));
         ImGui.PushStyleColor(ImGuiCol.Text, ToImGuiColor(hud.TextColor.Value));
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, hud.BorderRounding.Value);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, hud.BorderThickness.Value);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0f);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(hud.Padding.Value, hud.Padding.Value));
+        ImGui.PushStyleVar(ImGuiStyleVar.Alpha, hud.Opacity.Value);
 
         const ImGuiWindowFlags flags =
             ImGuiWindowFlags.NoCollapse |
             ImGuiWindowFlags.AlwaysAutoResize;
 
-        if (!ImGui.Begin("AtlasHelper##AtlasHelperHud", flags))
+        var title = string.IsNullOrWhiteSpace(hud.Title.Value) ? " " : hud.Title.Value;
+        if (!ImGui.Begin($"{title}##AtlasHelperHud", flags))
         {
             ImGui.End();
             ImGui.PopStyleVar(3);
-            ImGui.PopStyleColor(3);
+            ImGui.PopStyleColor(2);
             return;
         }
 
@@ -67,15 +67,12 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 
         ImGui.Text("Exarch chain:  pending");
         ImGui.Text("Eater chain:   pending");
-        ImGui.Separator();
-
-        ImGui.TextDisabled("(placeholders until the spike lands)");
 
         ImGui.SetWindowFontScale(1f);
         ImGui.End();
 
         ImGui.PopStyleVar(3);
-        ImGui.PopStyleColor(3);
+        ImGui.PopStyleColor(2);
     }
 
     private static ImGuiVector4 ToImGuiColor(Color color) =>
