@@ -1,3 +1,4 @@
+using AtlasHelper.GameState;
 using AtlasHelper.Ui;
 using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
@@ -6,6 +7,10 @@ namespace AtlasHelper;
 
 public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 {
+    private readonly GameStateReader _state = new();
+
+    public AtlasSnapshot State => _state.Current;
+
     public override bool Initialise()
     {
         Settings.Overview.DrawDelegate = () => OverviewPanel.Draw(Settings);
@@ -15,9 +20,14 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 
     public override void AreaChange(AreaInstance area)
     {
+        _state.Refresh(GameController);
     }
 
-    public override Job Tick() => null;
+    public override Job Tick()
+    {
+        _state.RefreshIfStale(GameController);
+        return null;
+    }
 
     public override void Render()
     {
