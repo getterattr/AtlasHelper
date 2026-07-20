@@ -35,35 +35,30 @@ internal static class AtlasQuestFlags
             // over; closest real flag to "have the Beacon".
             public const string BeaconAcquired = "MetEnvoyMaven";
 
-            // Semi-confident: MavenFirstInvitation matches Stage 1
-            // ("first invitation seen/accepted").
-            public const string Stage1 = "MavenFirstInvitation";
-            // TODO(fabricated): Files.QuestFlags catalog confirms
-            // MavensCrucibleStage{2..5}Complete are NOT real POE flags.
-            // The 5-stage ladder progression is not exposed as a
-            // per-stage flag; likely derived from splinter/witness
-            // counters in ServerData. Left as null-returning constants
-            // for API stability; consumers must handle null.
-            public const string Stage2 = "MavensCrucibleStage2Complete";
-            public const string Stage3 = "MavensCrucibleStage3Complete";
-            public const string Stage4 = "MavensCrucibleStage4Complete";
-            public const string Stage5 = "MavensCrucibleStage5Complete";
+            // Crucible ladder (3/4/5/6/10-way) has no per-stage flag.
+            // Completion is derived purely from
+            // ServerData.MavenWitnessedAreas.Count against cumulative
+            // thresholds - see AtlasInvitationReader. Quest-item flags
+            // are intentionally ignored: writs relate to the pinnacle
+            // Maven fight, not to Crucible ladder progression.
         }
 
-        // TODO(fabricated): Files.QuestFlags catalog confirms no
-        // MavensInvitationThe{X}Complete flags exist. POE tracks themed
-        // invitation completion via inventory/item state (invitation
-        // items are consumed on run). If completion state is ever needed
-        // it must come from a different source; catalog constants here
-        // are placeholders that never resolve.
+        // Themed-invitation unlock state. HaveMavenMapVoid{N} flips true
+        // once the requisite bosses have been witnessed and Kirac begins
+        // offering the invitation; it stays true regardless of whether
+        // the fight has been completed. Not an inventory flag - these
+        // invitations are one-shot consumables. Completion state itself
+        // has no dedicated flag in Files.QuestFlags; the tooltip's 1/1
+        // vs 0/1 count is derived elsewhere (likely a per-quest-reward
+        // ledger tied to QuestPassiveSkillPoints grants).
         public static class ThemedInvitations
         {
-            public const string Formed = "MavensInvitationTheFormedComplete";
-            public const string Twisted = "MavensInvitationTheTwistedComplete";
-            public const string Elderslayers = "MavensInvitationTheElderslayersComplete";
-            public const string Forgotten = "MavensInvitationTheForgottenComplete";
-            public const string Remembered = "MavensInvitationTheRememberedComplete";
-            public const string Feared = "MavensInvitationTheFearedComplete";
+            public const string FormedUnlocked = "HaveMavenMapVoid1";
+            public const string TwistedUnlocked = "HaveMavenMapVoid2";
+            public const string ForgottenUnlocked = "HaveMavenMapVoid3";
+            public const string RememberedUnlocked = "HaveMavenMapVoid4";
+            public const string FearedUnlocked = "HaveMavenMapVoid5";
+            public const string ElderslayersUnlocked = "HaveMavenMapVoid6";
         }
     }
 
@@ -102,23 +97,23 @@ internal static class AtlasQuestFlags
             // Incarnations - two mid-tier, one final (Dread in Pinnacles).
             // Ignorance = Dread, Benevolence = Neglect, Fear = Fear.
             public const string IncarnationOfNeglectDefeated = "BenevolenceBossNonQuestDefeated";
-            // TODO(fabricated): Files.QuestFlags catalog confirms no
-            // FearBossNonQuestDefeated. Fear is fought only inside the
-            // Threads-of-the-Originator quest chain - no non-quest
-            // defeat mechanism exists. Fall back to derived state:
-            // Fear is defeated when all three memory maps are Completed.
-            public const string IncarnationOfFearDefeated = "FearBossNonQuestDefeated";
+            // Fear is a quest-only boss - no NonQuestDefeated flag
+            // exists. FearBossKeyHeldBefore fires the first time the
+            // player picks up the Fear key (crafted by Eagon after all
+            // three memory maps clear). It is the closest proxy for
+            // "player has reached the Fear fight"; a true "defeated"
+            // signal must be derived from the Ceremonial voidstone
+            // being socketed in AtlasTree.
+            public const string IncarnationOfFearDefeated = "FearBossKeyHeldBefore";
         }
 
         // Decayed: Guardian defeats live in AtlasMapNode.Completed;
         // DecayedReader reads the tree directly.
     }
 
-    // Every constant we expect Files.QuestFlags to resolve. Flags marked
-    // TODO(fabricated) above (Maven Crucible stages 2-5, themed
-    // invitations, FearBossNonQuestDefeated) are intentionally excluded -
-    // they do not exist in POE's flag definitions and would just add
-    // noise to the startup validation log.
+    // Every constant we expect Files.QuestFlags to resolve. Themed
+    // invitation completions are omitted - POE tracks those via
+    // consumed inventory items, not flags.
     private static readonly string[] All =
     {
         Pinnacles.Maven, Pinnacles.Shaper, Pinnacles.Elder,
@@ -126,7 +121,6 @@ internal static class AtlasQuestFlags
         Pinnacles.IncarnationOfDread, Pinnacles.Sirus,
 
         Maven.AtlasLadder.BeaconAcquired,
-        Maven.AtlasLadder.Stage1,
 
         Voidstones.Eldritch.Exarch.EnvoyMet, Voidstones.Eldritch.Exarch.InfluenceUnlocked,
         Voidstones.Eldritch.Exarch.PolaricInvitationDropped, Voidstones.Eldritch.Exarch.BlackStarDefeated,
@@ -137,6 +131,11 @@ internal static class AtlasQuestFlags
 
         Voidstones.Originator.EagonMet, Voidstones.Originator.EagonIntroductionSeen,
         Voidstones.Originator.IncarnationOfNeglectDefeated,
+        Voidstones.Originator.IncarnationOfFearDefeated,
+
+        Maven.ThemedInvitations.FormedUnlocked, Maven.ThemedInvitations.TwistedUnlocked,
+        Maven.ThemedInvitations.ForgottenUnlocked, Maven.ThemedInvitations.RememberedUnlocked,
+        Maven.ThemedInvitations.FearedUnlocked, Maven.ThemedInvitations.ElderslayersUnlocked,
     };
 
     public sealed record ValidationResult(int Total, IReadOnlyList<string> Unresolved);

@@ -91,10 +91,8 @@ internal static class HudOverlay
     {
         if (invitation.QuestlineComplete)
             return "Complete";
-
-        if (invitation.NextStageWitnessTarget is int target && invitation.NextStage is int stage)
+        if (invitation.NextStage is int stage && invitation.NextStageWitnessTarget is int target)
             return $"Stage {stage}/{AtlasInvitation.FinalStage}  {invitation.WitnessProgressCapped} / {target}";
-
         return "-";
     }
 

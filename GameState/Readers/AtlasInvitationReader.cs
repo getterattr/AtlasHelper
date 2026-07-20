@@ -5,28 +5,27 @@ namespace AtlasHelper.GameState.Readers;
 
 internal static class AtlasInvitationReader
 {
-    private static readonly string[] StageCompleteFlags =
-    {
-        AtlasQuestFlags.Maven.AtlasLadder.Stage1,
-        AtlasQuestFlags.Maven.AtlasLadder.Stage2,
-        AtlasQuestFlags.Maven.AtlasLadder.Stage3,
-        AtlasQuestFlags.Maven.AtlasLadder.Stage4,
-        AtlasQuestFlags.Maven.AtlasLadder.Stage5,
-    };
+    private const string MavenAtlasQuestId = "maven_atlas";
 
     public static AtlasInvitation Read(GameController gc, QuestFlagLookup flags)
     {
-        int? completedStage = null;
-        for (int i = 0; i < StageCompleteFlags.Length; i++)
+        int? stateId = null;
+        var quests = gc.IngameState?.IngameUi?.GetQuests;
+        if (quests != null)
         {
-            if (flags.Get(StageCompleteFlags[i]) == true)
-                completedStage = i + 1;
+            foreach (var tuple in quests)
+            {
+                if (tuple.Item1?.Id == MavenAtlasQuestId)
+                {
+                    stateId = tuple.Item2;
+                    break;
+                }
+            }
         }
 
-        var witnessed = gc.IngameState.Data.ServerData.MavenWitnessedAreas?.Count ?? 0;
         return new AtlasInvitation(
             BeaconAcquired: flags.Get(AtlasQuestFlags.Maven.AtlasLadder.BeaconAcquired),
-            CompletedStage: completedStage,
-            WitnessedBossCount: witnessed);
+            StateId: stateId,
+            WitnessedBossCount: gc.IngameState.Data.ServerData.MavenWitnessedAreas?.Count ?? 0);
     }
 }

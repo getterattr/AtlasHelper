@@ -47,9 +47,7 @@ internal sealed class FlagDiagnostics
 
         // Full Files.QuestFlags catalog - the canonical superset of every
         // flag id the game defines, regardless of whether this character
-        // has ever seen it. Useful for pinning names of flags that never
-        // surface in ServerData (e.g. Maven Crucible stages 2-5 before
-        // the ladder has progressed that far).
+        // has ever seen it.
         var catalog = gc.Files?.QuestFlags?.EntriesList;
         if (catalog != null)
         {
@@ -66,6 +64,105 @@ internal sealed class FlagDiagnostics
             var catalogPath = Path.Combine(_dumpDirectory, "QuestFlagCatalog.tsv");
             File.WriteAllText(catalogPath, catalogSb.ToString());
             _logInfo($"[AtlasHelper] Dumped {ids.Count} Files.QuestFlags catalog ids to {catalogPath}");
+        }
+
+        // Files.QuestStates - richer catalog of per-quest progression
+        // states. Each entry carries QuestStateId + Quest.Id + Quest.Name
+        // + ProgressText. Where QuestFlags is a flat name list,
+        // QuestStates lets us find the enumerated stages of a specific
+        // quest (e.g. Maven's Crucible stages 1..5).
+        var questStates = gc.Files?.QuestStates?.EntriesList;
+        if (questStates != null)
+        {
+            var qsSb = new StringBuilder();
+            qsSb.AppendLine("state_id\tquest_id\tact\tquest_name");
+            foreach (var entry in questStates)
+            {
+                if (entry == null) continue;
+                var stateId = entry.QuestStateId;
+                var questId = entry.Quest?.Id ?? string.Empty;
+                var act = entry.Quest?.Act ?? 0;
+                var questName = entry.Quest?.Name ?? string.Empty;
+                qsSb.Append(stateId).Append('\t')
+                    .Append(questId).Append('\t')
+                    .Append(act).Append('\t')
+                    .Append(questName)
+                    .Append('\n');
+            }
+            var qsPath = Path.Combine(_dumpDirectory, "QuestStates.tsv");
+            File.WriteAllText(qsPath, qsSb.ToString());
+            _logInfo($"[AtlasHelper] Dumped {questStates.Count} Files.QuestStates to {qsPath}");
+        }
+
+        try
+        {
+            var qr = gc.Files?.QuestRewards?.EntriesList;
+            if (qr != null)
+            {
+                var qrSb = new StringBuilder();
+                qrSb.AppendLine("quest_id\tact\treward_class\treward_name\treward_level");
+                foreach (var entry in qr)
+                {
+                    if (entry?.Offer?.Quest == null) continue;
+                    var qid = entry.Offer.Quest.Id ?? string.Empty;
+                    var act = entry.Offer.Quest.Act;
+                    var cls = entry.Reward?.ClassName ?? string.Empty;
+                    var name = entry.Reward?.BaseName ?? string.Empty;
+                    var lvl = entry.RewardLevel;
+                    qrSb.Append(qid).Append('\t').Append(act).Append('\t')
+                        .Append(cls).Append('\t').Append(name).Append('\t')
+                        .Append(lvl).Append('\n');
+                }
+                var qrPath = Path.Combine(_dumpDirectory, "QuestRewards.tsv");
+                File.WriteAllText(qrPath, qrSb.ToString());
+                _logInfo($"[AtlasHelper] Dumped {qr.Count} QuestRewards to {qrPath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logError($"[AtlasHelper] QuestRewards dump failed: {ex.Message}");
+        }
+
+        // IngameUi.GetQuests / GetCompletedQuests: character's current
+        // quest-state cursor per tracked quest. This is where maven_atlas
+        // (17-state Crucible ladder) reports the player's current stage.
+        try
+        {
+            var qtSb = new StringBuilder();
+            qtSb.AppendLine("bucket\tstate_id\tquest_id\tact\tquest_name");
+            var all = gc.IngameState?.IngameUi?.GetQuests;
+            if (all != null)
+            {
+                foreach (var tuple in all)
+                {
+                    var q = tuple.Item1;
+                    if (q == null) continue;
+                    qtSb.Append("all\t").Append(tuple.Item2).Append('\t')
+                        .Append(q.Id ?? string.Empty).Append('\t')
+                        .Append(q.Act).Append('\t')
+                        .Append(q.Name ?? string.Empty).Append('\n');
+                }
+            }
+            var done = gc.IngameState?.IngameUi?.GetCompletedQuests;
+            if (done != null)
+            {
+                foreach (var tuple in done)
+                {
+                    var q = tuple.Item1;
+                    if (q == null) continue;
+                    qtSb.Append("done\t").Append(tuple.Item2).Append('\t')
+                        .Append(q.Id ?? string.Empty).Append('\t')
+                        .Append(q.Act).Append('\t')
+                        .Append(q.Name ?? string.Empty).Append('\n');
+                }
+            }
+            var qtPath = Path.Combine(_dumpDirectory, "QuestTracker.tsv");
+            File.WriteAllText(qtPath, qtSb.ToString());
+            _logInfo($"[AtlasHelper] Dumped quest tracker to {qtPath}");
+        }
+        catch (Exception ex)
+        {
+            _logError($"[AtlasHelper] QuestTracker dump failed: {ex.Message}");
         }
 
         var result = AtlasQuestFlags.Validate(gc);
