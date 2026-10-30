@@ -24,4 +24,4 @@
 
 ## Settings
 
-Pre-allowed permissions are in `.claude/settings.json`. Local overrides go in `.claude/settings.local.json` (gitignored).
+Pre-allowed permissions come from the workspace root's `.claude/settings.json`. Local overrides go in `.claude/settings.local.json` (gitignored).

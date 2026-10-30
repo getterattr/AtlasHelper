@@ -19,7 +19,7 @@ public class AtlasHelper : BaseSettingsPlugin<AtlasHelperSettings>
 
     public AtlasHelper()
     {
-        Name = "AtlasHelper";
+        Name = "Atlas Helper";
     }
 
     public AtlasSnapshot State => _state.Current;
